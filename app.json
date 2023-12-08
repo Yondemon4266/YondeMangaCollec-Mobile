@@ -4,25 +4,35 @@
     "slug": "mobile-yondemangacollec",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logoappadaptive.png",
+    "icon": "./assets/logoappadaptive.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/logoappadaptive.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logoappadaptive.png",
+        "foregroundImage": "./assets/logoappadaptive.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.yondemon.mobileyondemangacollec"
     },
     "web": {
-      "favicon": "./assets/images/logoappadaptive.png"
+      "favicon": "./assets/logoappadaptive.png"
+    },
+    "sdkVersion": "49.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "32cd83d6-03c9-416d-a2c1-a9025729b03a"
+      }
     }
-  }
+  },
+  "name": "mobile-yondemangacollec"
 }

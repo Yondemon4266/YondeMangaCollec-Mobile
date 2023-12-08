@@ -1,25 +1,36 @@
-export const navbarStyles = StyleSheet.create({
-  navbar: {
+import { StyleSheet } from "react-native";
+
+export const s = StyleSheet.create({
+  headerContainer: {
+    resizeMode: "cover",
+    height: 250,
+  },
+  img: {
+    width: 80,
+    height: 80,
     position: "absolute",
-    bottom: 0,
-    backgroundColor: "white",
+    zIndex: 1,
+  },
+  img1: {
+    top: 20,
+    left: 0,
+    transform: [{ rotate: "15deg" }],
+  },
+  img2: {
+    top: 20,
+    right: 0,
+    transform: [{ rotate: "-15deg" }],
+  },
+  headerContent: {
+    paddingTop: 50,
+    height: "100%",
     alignItems: "center",
-    height: 60,
-    width: "100%",
+    justifyContent: "center",
+    gap: 12,
+  },
+  headerLine: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 21,
-    borderTopWidth: 1,
-    borderTopColor: "#E2E3DF",
-  },
-  navbarColumn: {
-    alignItems: "center",
-  },
-  navbarText: {
-    fontSize: 10,
-  },
-  iconNavbar: {
-    width: 32,
-    height: 32,
+    gap: 10,
+    alignContent: "center",
   },
 });

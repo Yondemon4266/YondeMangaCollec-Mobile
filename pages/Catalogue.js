@@ -1,5 +1,11 @@
 import React from "react";
-import { Text } from "react-native";
-export default function Catalogue() {
-  return <Text>Catalogue</Text>;
+import { View } from "react-native";
+import { s } from "./CatalogueStyle";
+import CatalogueHeader from "../components/CatalogueHeader/CatalogueHeader";
+export default function Catalogue({ navigation }) {
+  return (
+    <View>
+      <CatalogueHeader />
+    </View>
+  );
 }
