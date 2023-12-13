@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import HeaderAccueil from "../components/HeaderAccueil/HeaderAccueil";
 import Card from "../components/Card/Card";
 import Txt from "../components/Text/Txt";
 import { s } from "../pages/AccueilStyle";
-
-import { color1 } from "../utils/Colors";
 import axios from "axios";
 
 export default function Accueil({ navigation }) {
@@ -31,12 +29,17 @@ export default function Accueil({ navigation }) {
       <ScrollView contentContainerStyle={{ gap: 10 }}>
         <HeaderAccueil />
         <Txt styles={{ fontSize: 20, textAlign: "center" }}>
-          Œuvres en cours
+          Oeuvres en cours
         </Txt>
         <Txt styles={s.text}>Animés</Txt>
         <View style={s.cardlist}>
           {animeNews.map((card) => (
-            <Card key={card.mal_id} data={card} navigation={navigation} />
+            <Card
+              key={card.mal_id}
+              data={card}
+              navigation={navigation}
+              anime={true}
+            />
           ))}
         </View>
 
@@ -44,7 +47,12 @@ export default function Accueil({ navigation }) {
 
         <View style={s.cardlist}>
           {mangaNews.map((card) => (
-            <Card key={card.mal_id} data={card} navigation={navigation} />
+            <Card
+              key={card.mal_id}
+              data={card}
+              navigation={navigation}
+              anime={false}
+            />
           ))}
         </View>
       </ScrollView>

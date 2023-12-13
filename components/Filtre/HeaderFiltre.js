@@ -5,21 +5,23 @@ import { color1, color2, color4, color5 } from "../../utils/Colors";
 import { s } from "./FiltreStyle";
 export default function HeaderFiltre({
   isAnime,
-  filterOptionOpen,
+  filterOptions,
   ChangeFilterOptions,
 }) {
   return (
     <View style={s.header}>
       {isAnime && (
         <ButtonComp
-          disabled={filterOptionOpen.animeGenres}
+          disabled={filterOptions.animeGenresOpen}
           styl={
-            filterOptionOpen.animeGenres
+            filterOptions.animeGenresOpen
               ? { backgroundColor: color1 }
               : { backgroundColor: color2 }
           }
           textstyl={
-            filterOptionOpen.animeGenres ? { color: color5 } : { color: color4 }
+            filterOptions.animeGenresOpen
+              ? { color: color5 }
+              : { color: color4 }
           }
           onPress={() => ChangeFilterOptions("animeGenres")}
         >
@@ -28,14 +30,16 @@ export default function HeaderFiltre({
       )}
       {!isAnime && (
         <ButtonComp
-          disabled={filterOptionOpen.mangaGenres}
+          disabled={filterOptions.mangaGenresOpen}
           styl={
-            filterOptionOpen.mangaGenres
+            filterOptions.mangaGenresOpen
               ? { backgroundColor: color1 }
               : { backgroundColor: color2 }
           }
           textstyl={
-            filterOptionOpen.mangaGenres ? { color: color5 } : { color: color4 }
+            filterOptions.mangaGenresOpen
+              ? { color: color5 }
+              : { color: color4 }
           }
           onPress={() => ChangeFilterOptions("mangaGenres")}
         >
@@ -44,14 +48,14 @@ export default function HeaderFiltre({
       )}
       {isAnime && (
         <ButtonComp
-          disabled={filterOptionOpen.studios}
+          disabled={filterOptions.studiosOpen}
           styl={
-            filterOptionOpen.studios
+            filterOptions.studiosOpen
               ? { backgroundColor: color1 }
               : { backgroundColor: color2 }
           }
           textstyl={
-            filterOptionOpen.studios ? { color: color5 } : { color: color4 }
+            filterOptions.studiosOpen ? { color: color5 } : { color: color4 }
           }
           onPress={() => ChangeFilterOptions("studios")}
         >
@@ -60,14 +64,14 @@ export default function HeaderFiltre({
       )}
       {!isAnime && (
         <ButtonComp
-          disabled={filterOptionOpen.magazines}
+          disabled={filterOptions.magazinesOpen}
           styl={
-            filterOptionOpen.magazines
+            filterOptions.magazinesOpen
               ? { backgroundColor: color1 }
               : { backgroundColor: color2 }
           }
           textstyl={
-            filterOptionOpen.magazines ? { color: color5 } : { color: color4 }
+            filterOptions.magazinesOpen ? { color: color5 } : { color: color4 }
           }
           onPress={() => ChangeFilterOptions("magazines")}
         >

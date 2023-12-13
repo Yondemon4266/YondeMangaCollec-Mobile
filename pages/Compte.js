@@ -7,9 +7,10 @@ import { color1, color2, color4, color5 } from "../utils/Colors";
 import Connexion from "../Screens/CompteScreens/Connexion";
 import Inscription from "../Screens/CompteScreens/Inscription";
 import Txt from "../components/Text/Txt";
-export default function Compte() {
+export default function Compte({ navigation }) {
   const [isLoginPage, setIsLoginPage] = useState(true);
   const logoSize = 24;
+
   return (
     <SafeAreaProvider>
       <SafeAreaView>
@@ -43,8 +44,8 @@ export default function Compte() {
               Inscription
             </ButtonComp>
           </View>
-          {isLoginPage && <Connexion />}
-          {!isLoginPage && <Inscription />}
+          {isLoginPage && <Connexion navigation={navigation} />}
+          {!isLoginPage && <Inscription navigation={navigation} />}
           <Txt styles={{ fontSize: 24, alignSelf: "center" }}>OU</Txt>
           <View style={s.footer}>
             <ButtonComp

@@ -1,98 +1,70 @@
 import { ActivityIndicator, View } from "react-native";
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React from "react";
 import { s } from "./FiltreStyle";
 import ButtonComp from "../Button/ButtonComp";
 import { color5 } from "../../utils/Colors";
 import { SearchBar } from "@rneui/themed";
 import { searchbarStyle } from "../SearchBarStyle/SearchBarStyle";
-
 import HeaderFiltre from "./HeaderFiltre";
 import OptionsSelected from "./OptionsSelected";
 import Options from "./Options";
 
-export default function Filtre(props) {
-  const {
-    isAnime,
-    dataFiltres,
-    filterOptions,
-    setFilterOptions,
-    searchMangaData,
-    searchAnimeData,
-  } = props;
-  const [loading, setLoading] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filterOptionOpen, setFilterOptionOpen] = useState({
-    animeGenres: true,
-    mangaGenres: true,
-    studios: false,
-    magazines: false,
-  });
-  const [filterSearch, setFilterSearch] = useState("");
-  const filterSearchRef = useRef();
+export const Filtre = (props) => {
+  const { isAnime, filterOptions, setFilterOptions, setIsSearchSubmit } = props;
+
   const iconSize = 20;
 
   function ChangeFilterOptions(selectedOption) {
     if (isAnime) {
-      setFilterOptionOpen((prev) => ({
+      setFilterOptions((prev) => ({
         ...prev,
-        animeGenres:
-          selectedOption === "animeGenres" ? !prev.animeGenres : false,
-        studios: selectedOption === "studios" ? !prev.studios : false,
+        animeGenresOpen:
+          selectedOption === "animeGenres" ? !prev.animeGenresOpen : false,
+        studiosOpen: selectedOption === "studios" ? !prev.studiosOpen : false,
       }));
     } else {
-      setFilterOptionOpen((prev) => ({
+      setFilterOptions((prev) => ({
         ...prev,
-        mangaGenres:
-          selectedOption === "mangaGenres" ? !prev.mangaGenres : false,
-        magazines: selectedOption === "magazines" ? !prev.magazines : false,
+        mangaGenresOpen:
+          selectedOption === "mangaGenres" ? !prev.mangaGenresOpen : false,
+        magazinesOpen:
+          selectedOption === "magazines" ? !prev.magazinesOpen : false,
       }));
     }
   }
 
   function AddOption(filterId, filterName) {
     setFilterOptions((prev) => {
-      if (filterOptionOpen.animeGenres && isAnime) {
-        if (!prev.animeGenres.find((genre) => genre.id === filterId)) {
+      const listKey = getListKey();
+
+      if (listKey && prev[listKey]) {
+        const list = prev[listKey];
+        const isOptionInList = list.find((item) => item.name === filterName);
+
+        if (!isOptionInList) {
           return {
             ...prev,
-            animeGenres: [
-              ...prev.animeGenres,
-              { id: filterId, name: filterName },
-            ],
-          };
-        } else {
-          return prev;
-        }
-      } else if (filterOptionOpen.mangaGenres && !isAnime) {
-        if (!prev.mangaGenres.find((genre) => genre.id === filterId)) {
-          return {
-            ...prev,
-            mangaGenres: [
-              ...prev.mangaGenres,
-              { id: filterId, name: filterName },
-            ],
-          };
-        } else {
-          return prev;
-        }
-      } else if (filterOptionOpen.studios && isAnime) {
-        if (!prev.studios.find((studio) => studio.id === filterId)) {
-          return {
-            ...prev,
-            studios: [...prev.studios, { id: filterId, name: filterName }],
-          };
-        } else {
-          return prev;
-        }
-      } else if (filterOptionOpen.magazines && !isAnime) {
-        if (!prev.magazines.find((magazine) => magazine.id === filterId)) {
-          return {
-            ...prev,
-            magazines: [...prev.magazines, { id: filterId, name: filterName }],
+            [listKey]: [...list, { id: filterId, name: filterName }],
           };
         }
       }
+
+      return prev;
     });
+
+    function getListKey() {
+      if (filterOptions.animeGenresOpen && isAnime) {
+        return "animeGenres";
+      } else if (filterOptions.mangaGenresOpen && !isAnime) {
+        return "mangaGenres";
+      } else if (filterOptions.studiosOpen && isAnime) {
+        return "studios";
+      } else if (filterOptions.magazinesOpen && !isAnime) {
+        return "magazines";
+      }
+
+      return null;
+    }
   }
 
   function RemoveOption(filterName) {
@@ -136,31 +108,42 @@ export default function Filtre(props) {
     }
   }
   function UpdateFilterSearch(search) {
-    setFilterSearch(search);
+    setFilterOptions((prev) => ({
+      ...prev,
+      search: search,
+    }));
   }
 
   function ClearFilterSearch() {
-    setFilterSearch("");
+    setFilterOptions((prev) => ({
+      ...prev,
+      search: "",
+    }));
   }
 
   return (
     <View style={s.container}>
       <ButtonComp
-        name={isFilterOpen ? "close" : "settings"}
+        name={filterOptions.isOpen ? "close" : "settings"}
         size={iconSize}
         color={color5}
         styl={s.filterbutton}
-        onPress={() => setIsFilterOpen(!isFilterOpen)}
+        onPress={() =>
+          setFilterOptions((prev) => ({
+            ...prev,
+            isOpen: !prev.isOpen,
+          }))
+        }
       >
         Filtrer
       </ButtonComp>
 
-      {isFilterOpen && (
+      {filterOptions.isOpen && (
         <>
           <HeaderFiltre
             isAnime={isAnime}
             ChangeFilterOptions={ChangeFilterOptions}
-            filterOptionOpen={filterOptionOpen}
+            filterOptions={filterOptions}
           />
           <SearchBar
             placeholder="Rechercher un tag"
@@ -169,8 +152,7 @@ export default function Filtre(props) {
             inputStyle={searchbarStyle.searchbartext}
             lightTheme={true}
             onChangeText={UpdateFilterSearch}
-            value={filterSearch}
-            ref={filterSearchRef}
+            value={filterOptions.search}
             onClear={ClearFilterSearch}
           />
           <OptionsSelected
@@ -182,18 +164,14 @@ export default function Filtre(props) {
 
           <Options
             isAnime={isAnime}
-            filterOptionOpen={filterOptionOpen}
-            dataFiltres={dataFiltres}
+            filterOptions={filterOptions}
             AddOption={AddOption}
-            filterSearch={filterSearch}
           />
-          <ButtonComp
-            onPress={() => (isAnime ? searchAnimeData() : searchMangaData())}
-          >
+          <ButtonComp onPress={() => setIsSearchSubmit(true)}>
             Valider la recherche
           </ButtonComp>
         </>
       )}
     </View>
   );
-}
+}; 

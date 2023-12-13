@@ -11,7 +11,7 @@ import {
 export const s = StyleSheet.create({
   container: {
     gap: 15,
-    paddingHorizontal: "10%",
+    paddingHorizontal: "5%",
   },
   header: {
     flexDirection: "row",
@@ -23,16 +23,17 @@ export const s = StyleSheet.create({
     paddingVertical: 5,
     height: 120,
     paddingHorizontal: 5,
+    marginTop: -40,
   },
   options: {
     justifyContent: "center",
     alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
     gap: 5,
   },
   optionsselectedcontainer: {
     maxHeight: 120,
+    marginBottom: 30,
+    marginTop: -10,
   },
   optionsselected: {
     flexDirection: "row",
@@ -40,7 +41,7 @@ export const s = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 5,
   },
   tagtext: {
     color: color5,

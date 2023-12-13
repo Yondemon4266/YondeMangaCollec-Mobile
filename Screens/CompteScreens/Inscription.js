@@ -1,14 +1,85 @@
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { s } from "./Style";
 import { useForm } from "react-hook-form";
 import Txt from "../../components/Text/Txt";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import ButtonComp from "../../components/Button/ButtonComp";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { color1 } from "../../utils/Colors";
+import { useDispatch } from "react-redux";
+import { authReducer } from "../../Redux/UserSlice";
 
-export default function Inscription() {
-  const { control, handleSubmit, watch } = useForm();
+export default function Inscription({ navigation }) {
+  const dispatch = useDispatch();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setError,
+    formState: { isSubmitting, isSubmitSuccessful },
+  } = useForm();
   const pwd = watch("password");
-  const onSubmit = (data) => console.log(data);
+  const email = watch("email");
+
+  const onSubmit = async (data) => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: `https://server-yondemangacollec.onrender.com/api/user/register`,
+        data: {
+          pseudo: data.pseudo,
+          email: data.email,
+          password: data.password,
+        },
+      });
+      if (response) {
+        console.log("register réussi", response.data.message);
+      }
+    } catch (err) {
+      const asyncErrors = err.response.data.errors;
+      setError("pseudo", {
+        type: "manual",
+        message: asyncErrors.pseudo,
+      });
+      setError("email", {
+        type: "manual",
+        message: asyncErrors.email,
+      });
+      setError("password", {
+        type: "manual",
+        message: asyncErrors.password,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      const loginAfterSignUp = async () => {
+        try {
+          const loginResponse = await axios({
+            method: "post",
+            url: `https://server-yondemangacollec.onrender.com/api/user/login`,
+            withCredentials: true,
+            data: {
+              email: email,
+              password: pwd,
+            },
+          });
+          console.log("login response: ", loginResponse.data.message);
+          if (loginResponse) {
+            navigation.navigate("ConnexionReussi");
+          } else {
+            dispatch(authReducer(false));
+          }
+        } catch (err) {
+          console.log("err login", err.response.data.errors);
+          dispatch(authReducer(false));
+        }
+      };
+      loginAfterSignUp();
+    }
+  }, [isSubmitSuccessful, navigation]);
   return (
     <View style={s.container}>
       <Txt styles={s.title}>Créer un compte</Txt>
@@ -31,7 +102,7 @@ export default function Inscription() {
         />
         <CustomInput
           control={control}
-          name="mail"
+          name="email"
           placeholder="Email"
           rules={{
             maxLength: {
@@ -78,6 +149,7 @@ export default function Inscription() {
           }}
           secureTextEntry
         />
+        {isSubmitting && <ActivityIndicator size={"large"} />}
 
         <ButtonComp
           onPress={handleSubmit(onSubmit)}

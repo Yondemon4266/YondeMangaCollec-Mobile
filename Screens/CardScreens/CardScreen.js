@@ -7,8 +7,10 @@ import Tag from "../../components/Tags/Tag";
 import { color5, colorManga, color1 } from "../../utils/Colors";
 import Stars from "../../components/stars/Stars";
 import ButtonComp from "../../components/Button/ButtonComp";
+import { useSelector } from "react-redux";
 export default function CardScreen({ route, navigation }) {
   const { data } = route.params;
+  const isLogged = useSelector((state) => state.User.isLogged);
   return (
     <View style={s.container}>
       <ScrollView nestedScrollEnabled={true}>
@@ -43,17 +45,21 @@ export default function CardScreen({ route, navigation }) {
               <Txt>{data.synopsis}</Txt>
             </ScrollView>
           </View>
-          <View style={{ paddingHorizontal: 30 }}>
-            <ButtonComp
-              onPress={() => navigation.navigate("CompteStack")}
-              name="add"
-              size={24}
-              color={color5}
-              styl={{ alignSelf: "flex-start" }}
-            >
-              Se connecter
-            </ButtonComp>
-          </View>
+          {!isLogged && (
+            <View style={{ paddingHorizontal: 30, marginTop: 10 }}>
+              <ButtonComp
+                onPress={() => navigation.navigate("CompteStack")}
+                styl={{ alignSelf: "flex-start" }}
+              >
+                Se connecter
+              </ButtonComp>
+            </View>
+          )}
+          {isLogged && (
+            <View>
+              <ButtonComp>Ajouter à la collection</ButtonComp>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

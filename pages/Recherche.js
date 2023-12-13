@@ -1,28 +1,43 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import { ActivityIndicator, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { FlatList, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { SearchBar } from "@rneui/themed";
 import AnimeManga from "../components/CalendrierHeader.js/AnimeManga";
 import { s } from "./RechercheStyle";
-import Filtre from "../components/Filtre/Filtre";
+import { Filtre } from "../components/Filtre/Filtre";
 import { searchbarStyle } from "../components/SearchBarStyle/SearchBarStyle";
-import { DonneesFiltrees } from "../utils/DonneesFiltres";
 import Card from "../components/Card/Card";
-import { ScrollView } from "react-native";
+import { v4 as uuidv4 } from "uuid";
 
 import axios from "axios";
+import Txt from "../components/Text/Txt";
 export default function Recherche({ navigation }) {
   const [isAnime, setIsAnime] = useState(true);
-  const searchRef = useRef();
   const [search, setSearch] = useState("");
-  const dataFiltres = DonneesFiltrees;
-  const [displayedData, setDisplayedData] = useState([]);
+  const [displayedData, setDisplayedData] = useState({
+    animes: [],
+    mangas: [],
+  });
   const [loading, setLoading] = useState(false);
   const [filterOptions, setFilterOptions] = useState({
+    isOpen: false,
     mangaGenres: [],
     animeGenres: [],
     studios: [],
     magazines: [],
+    animeGenresOpen: true,
+    mangaGenresOpen: true,
+    studiosOpen: false,
+    magazinesOpen: false,
+    search: "",
+    loading: false,
+  });
+  const [pageAnime, setPageAnime] = useState(1);
+  const [pageManga, setPageManga] = useState(1);
+  const [isSearchSubmit, setIsSearchSubmit] = useState(false);
+  const [searchCache, setSearchCache] = useState({
+    queryAnime: [],
+    queryManga: [],
   });
 
   function UpdateSearch(search) {
@@ -32,80 +47,118 @@ export default function Recherche({ navigation }) {
     setSearch("");
   }
 
-  async function searchMangaData() {
-    setLoading(true);
+  async function searchData() {
+    setFilterOptions((prev) => ({
+      ...prev,
+      isOpen: false,
+    }));
     const listMangaGenresIds = filterOptions.mangaGenres.map(
       (genre) => genre.id
     );
     const listMagazinesIds = filterOptions.magazines.map(
       (magazine) => magazine.id
     );
-    const querySearch = search ? `q=${search}` : "";
-
-    axios
-      .get(
-        `https://api.jikan.moe/v4/manga?${querySearch}?sfw&genres=${
-          listMangaGenresIds.length > 0 ? listMangaGenresIds : ""
-        }&magazines=${listMagazinesIds.length > 0 ? listMagazinesIds : ""}`
-      )
-      .then((response) => setDisplayedData(response.data.data))
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
-  }
-  async function searchAnimeData() {
-    setLoading(true);
     const listAnimeGenresIds = filterOptions.animeGenres.map(
       (genre) => genre.id
     );
     const listStudiosIds = filterOptions.studios.map((studio) => studio.id);
     const querySearch = search ? `q=${search}` : "";
+    const queryManga =
+      listMangaGenresIds + listMagazinesIds + querySearch + pageManga;
+    const queryAnime =
+      listAnimeGenresIds + listStudiosIds + querySearch + pageAnime;
 
-    axios
-      .get(
-        `https://api.jikan.moe/v4/anime?${querySearch}?sfw&genres=${
-          listAnimeGenresIds.length > 0 ? listAnimeGenresIds : ""
-        }&producers=${listStudiosIds.length > 0 ? listStudiosIds : ""}`
-      )
-      .then((response) => setDisplayedData(response.data.data))
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
-  }
-
-  async function getAnimeData() {
-    axios
-      .get(
-        "https://api.jikan.moe/v4/top/anime?q=&sfw&filter=bypopularity&filter=airing&type=tv&movie&rating=pg13&r&r17"
-      )
-      .then((response) => setDisplayedData(response.data.data))
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
-  }
-  async function getMangaData() {
-    axios
-      .get(
-        "https://api.jikan.moe/v4/top/manga?q=&sfw&filter=bypopularity&filter=publishing"
-      )
-      .then((response) => setDisplayedData(response.data.data))
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
+    if (isAnime) {
+      setLoading(true);
+      if (searchCache.queryAnime[queryAnime]) {
+        setDisplayedData((prev) => ({
+          ...prev,
+          animes: searchCache.queryAnime[queryAnime],
+        }));
+        setLoading(false);
+      } else {
+        axios
+          .get(
+            `https://api.jikan.moe/v4/anime?${querySearch}?sfw&genres=${
+              listAnimeGenresIds.length > 0 ? listAnimeGenresIds : ""
+            }&producers=${
+              listStudiosIds.length > 0 ? listStudiosIds : ""
+            }&page=${pageAnime}&type=tv&movie&ova&ona&special&genres_exclude=12,9,49,15`
+          )
+          .then((response) => {
+            setDisplayedData((prev) => {
+              if (isSearchSubmit) {
+                setIsSearchSubmit(false);
+                setSearchCache((prevCache) => ({
+                  ...prevCache,
+                  queryAnime: {
+                    ...prevCache.queryAnime,
+                    [queryAnime]: response.data.data,
+                  },
+                }));
+                return {
+                  ...prev,
+                  animes: response.data.data,
+                };
+              }
+              return {
+                ...prev,
+                animes: [...prev.animes, ...response.data.data],
+              };
+            });
+          })
+          .catch((error) => console.log(error))
+          .finally(() => setLoading(false));
+      }
+    } else {
+      setLoading(true);
+      if (searchCache.queryManga[queryManga]) {
+        setDisplayedData((prev) => ({
+          ...prev,
+          mangas: searchCache.queryManga[queryManga],
+        }));
+        setLoading(false);
+        console.log("cache");
+      } else {
+        axios
+          .get(
+            `https://api.jikan.moe/v4/manga?${querySearch}?sfw&genres=${
+              listMangaGenresIds.length > 0 ? listMangaGenresIds : ""
+            }&magazines=${
+              listMagazinesIds.length > 0 ? listMagazinesIds : ""
+            }&page=${pageManga}&type=manga&novel&oneshot&manhwa&genres_exclude=12,9,49,15`
+          )
+          .then((response) => {
+            setDisplayedData((prev) => {
+              if (isSearchSubmit) {
+                setIsSearchSubmit(false);
+                setSearchCache((prevCache) => ({
+                  ...prevCache,
+                  queryManga: {
+                    ...prevCache.queryManga,
+                    [queryManga]: response.data.data,
+                  },
+                }));
+                return {
+                  ...prev,
+                  mangas: response.data.data,
+                };
+              }
+              return {
+                ...prev,
+                mangas: [...prev.mangas, ...response.data.data],
+              };
+            });
+          })
+          .catch((error) => console.log(error))
+          .finally(() => setLoading(false));
+      }
+    }
   }
 
   useEffect(() => {
-    const isFilterOptionsEmpty = Object.values(filterOptions).every(
-      (option) => option.length === 0
-    );
-    setLoading(true);
-
-    if (isAnime && isFilterOptionsEmpty && !search) {
-      getAnimeData();
-    } else if (!isAnime && isFilterOptionsEmpty && !search) {
-      getMangaData();
-    } else if (isAnime && (!isFilterOptionsEmpty || search)) {
-      searchAnimeData();
-    } else if (!isAnime && (!isFilterOptionsEmpty || search)) {
-      searchMangaData();
-    }
-  }, [isAnime]);
+    searchData();
+  }, [isAnime, pageManga, pageAnime, isSearchSubmit]);
 
   return (
     <SafeAreaProvider>
@@ -120,11 +173,8 @@ export default function Recherche({ navigation }) {
             lightTheme={true}
             onChangeText={UpdateSearch}
             value={search}
-            ref={searchRef}
             onClear={ClearSearch}
-            onSubmitEditing={() =>
-              isAnime ? searchAnimeData() : searchMangaData()
-            }
+            onSubmitEditing={() => setIsSearchSubmit(true)}
           />
           <AnimeManga
             isAnime={isAnime}
@@ -134,34 +184,46 @@ export default function Recherche({ navigation }) {
         </View>
         <Filtre
           isAnime={isAnime}
-          dataFiltres={dataFiltres}
           filterOptions={filterOptions}
           setFilterOptions={setFilterOptions}
-          searchAnimeData={searchAnimeData}
-          searchMangaData={searchMangaData}
+          setIsSearchSubmit={setIsSearchSubmit}
+          searchData={searchData}
         />
-        {loading && <ActivityIndicator size="large" />}
         <View style={{ paddingVertical: 20, flex: 1 }}>
-          {!loading && (
-            <ScrollView
-              contentContainerStyle={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                paddingHorizontal: 5,
-                gap: 5,
-              }}
-            >
-              {displayedData.map((card, index) => (
+          {!loading &&
+          displayedData.animes.length === 0 &&
+          displayedData.mangas.length === 0 ? (
+            <Txt styles={{ textAlign: "center", lineHeight: 400 }}>
+              Aucune oeuvre trouvé avec cette recherche.
+            </Txt>
+          ) : (
+            <FlatList
+              data={isAnime ? displayedData.animes : displayedData.mangas}
+              renderItem={({ item }) => (
                 <Card
-                  key={index}
-                  data={card}
+                  data={item}
                   navigation={navigation}
                   imgstyl={{ flex: 1 }}
                   textstyl={{ fontSize: 12 }}
+                  key={() => uuidv4(v4options)}
+                  anime={isAnime ? true : false}
                 />
-              ))}
-            </ScrollView>
+              )}
+              contentContainerStyle={{
+                paddingHorizontal: 5,
+                alignItems: "center",
+                gap: 5,
+              }}
+              numColumns={2}
+              horizontal={false}
+              refreshing={loading}
+              onRefresh={() => {}}
+              onEndReached={() =>
+                isAnime
+                  ? setPageAnime((prev) => prev + 1)
+                  : setPageManga((prev) => prev + 1)
+              }
+            />
           )}
         </View>
       </SafeAreaView>
