@@ -37,6 +37,10 @@ export const s = StyleSheet.create({
     fontSize: 18,
     textAlign: "center",
   },
+  level: {
+    fontSize: 16,
+    textAlign: "center",
+  },
   text: {
     fontSize: 15,
     textAlign: "center",

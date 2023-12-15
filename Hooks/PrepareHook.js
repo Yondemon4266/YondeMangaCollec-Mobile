@@ -5,7 +5,7 @@ import lsb from "../assets/fonts/Literata-SemiBold.ttf";
 import * as Font from "expo-font";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { authReducer, getUserData, getUserId } from "../Redux/UserSlice";
+import { authReducer, getUserId, putUserData } from "../Redux/UserSlice";
 import { getAllUsers } from "../Redux/AllUsersSlice";
 
 export default function Preparation() {
@@ -67,7 +67,7 @@ export default function Preparation() {
           url: `https://server-yondemangacollec.onrender.com/api/user/${userId}`,
         });
         if (UserDataResponse) {
-          dispatch(getUserData(UserDataResponse.data));
+          dispatch(putUserData(UserDataResponse.data));
           console.log("succès réception données de l'user");
         }
       } catch (e) {
@@ -82,14 +82,14 @@ export default function Preparation() {
         await prepare();
         if (isLogged && userId !== "p") {
           await Promise.all([prepare3(), prepare2()]);
-          setAppIsReady(true);
         } else {
           dispatch(getAllUsers([]));
-          dispatch(getUserData([]));
-          setAppIsReady(true);
+          dispatch(putUserData([]));
         }
       } catch (e) {
         console.error("Une erreur s'est produite lors des préparations", e);
+      } finally {
+        setAppIsReady(true);
       }
     }
     prepareData();

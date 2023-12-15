@@ -1723,24 +1723,6 @@ export const DonneesFiltres = {
       count: 269,
     },
     {
-      mal_id: 9,
-      name: "Ecchi",
-      url: "https://myanimelist.net/anime/genre/9/Ecchi",
-      count: 789,
-    },
-    {
-      mal_id: 49,
-      name: "Erotica",
-      url: "https://myanimelist.net/anime/genre/49/Erotica",
-      count: 71,
-    },
-    {
-      mal_id: 12,
-      name: "Hentai",
-      url: "https://myanimelist.net/anime/genre/12/Hentai",
-      count: 1501,
-    },
-    {
       mal_id: 50,
       name: "Adult Cast",
       url: "https://myanimelist.net/anime/genre/50/Adult_Cast",
@@ -2027,12 +2009,6 @@ export const DonneesFiltres = {
       count: 153,
     },
     {
-      mal_id: 15,
-      name: "Kids",
-
-      count: 6285,
-    },
-    {
       mal_id: 42,
       name: "Seinen",
 
@@ -2159,24 +2135,6 @@ export const DonneesFiltres = {
       name: "Suspense",
 
       count: 560,
-    },
-    {
-      mal_id: 9,
-      name: "Ecchi",
-
-      count: 3601,
-    },
-    {
-      mal_id: 49,
-      name: "Erotica",
-
-      count: 9082,
-    },
-    {
-      mal_id: 12,
-      name: "Hentai",
-
-      count: 11356,
     },
     {
       mal_id: 50,
@@ -2480,11 +2438,6 @@ export const DonneesFiltres = {
       mal_id: 42,
       name: "Josei",
       count: 4063,
-    },
-    {
-      mal_id: 15,
-      name: "Kids",
-      count: 273,
     },
     {
       mal_id: 41,

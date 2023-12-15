@@ -12,90 +12,54 @@ export default function OptionsSelected({
 }) {
   const iconColor = color5;
   const iconSize = 10;
+
+  const renderTags = (filters, type) => {
+    return (
+      <ScrollView contentContainerStyle={s.optionsselected}>
+        {filters.map((filter) => (
+          <Tag
+            key={filter.id + type}
+            t={s.tagtext}
+            v={[s.tag, type === "ag" || "mg" ? s.tagGenre : s.tagStudio]}
+            onPress={() => RemoveOption(filter.name)}
+            name="close"
+            color={iconColor}
+            size={iconSize}
+          >
+            {filter.name}
+          </Tag>
+        ))}
+      </ScrollView>
+    );
+  };
+
+  const renderDeleteButton = (filters) => {
+    return (
+      filters.length > 0 && (
+        <Tag v={s.tagstitlec} t={s.tagstitlet} onPress={RemoveCategoryOptions}>
+          Supprimer filtres
+        </Tag>
+      )
+    );
+  };
+
   return (
     <View style={s.optionsselectedcontainer}>
-      {isAnime && (
-        <ScrollView contentContainerStyle={s.optionsselected}>
-          {filterOptions.animeGenres.map((filter) => (
-            <Tag
-              key={filter.id + "ag"}
-              t={s.tagtext}
-              v={[s.tag, s.tagGenre]}
-              onPress={() => RemoveOption(filter.name)}
-              name="close"
-              color={iconColor}
-              size={iconSize}
-            >
-              {filter.name}
-            </Tag>
-          ))}
-          {filterOptions.studios.map((filter) => (
-            <Tag
-              key={filter.id + "s"}
-              t={s.tagtext}
-              v={[s.tag, s.tagStudio]}
-              onPress={() => RemoveOption(filter.name)}
-              name="close"
-              color={iconColor}
-              size={iconSize}
-            >
-              {filter.name}
-            </Tag>
-          ))}
-        </ScrollView>
+      {isAnime ? (
+        <>
+          {renderTags(filterOptions.animeGenres, "ag")}
+          {renderTags(filterOptions.studios, "s")}
+        </>
+      ) : (
+        <>
+          {renderTags(filterOptions.mangaGenres, "mg")}
+          {renderTags(filterOptions.magazines, "m")}
+        </>
       )}
-      {!isAnime && (
-        <ScrollView contentContainerStyle={s.optionsselected}>
-          {filterOptions.mangaGenres.map((filter) => (
-            <Tag
-              key={filter.id + "mg"}
-              t={s.tagtext}
-              v={[s.tag, s.tagGenre]}
-              onPress={() => RemoveOption(filter.name)}
-              name="close"
-              color={iconColor}
-              size={iconSize}
-            >
-              {filter.name}
-            </Tag>
-          ))}
-          {filterOptions.magazines.map((filter) => (
-            <Tag
-              key={filter.id + "m"}
-              t={s.tagtext}
-              v={[s.tag, s.tagStudio]}
-              onPress={() => RemoveOption(filter.name)}
-              name="close"
-              color={iconColor}
-              size={iconSize}
-            >
-              {filter.name}
-            </Tag>
-          ))}
-        </ScrollView>
+
+      {renderDeleteButton(
+        isAnime ? filterOptions.animeGenres : filterOptions.mangaGenres
       )}
-      {isAnime &&
-        (filterOptions.animeGenres.length > 0 ||
-          filterOptions.studios.length > 0) && (
-          <Tag
-            v={s.tagstitlec}
-            t={s.tagstitlet}
-            onPress={RemoveCategoryOptions}
-          >
-            Supprimer filtres
-          </Tag>
-        )}
-      {!isAnime &&
-        (filterOptions.mangaGenres.length > 0 ||
-          filterOptions.magazines.length > 0) && (
-          <Tag
-            v={s.tagstitlec}
-            t={s.tagstitlet}
-            onPress={RemoveCategoryOptions}
-          >
-            Supprimer filtres
-          </Tag>
-        )}
     </View>
   );
 }

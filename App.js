@@ -15,6 +15,7 @@ export default function App() {
     }
   }, [appIsReady]);
 
+
   return appIsReady ? (
     <View style={{ flex: 1 }}>
       <NavigationContainer onReady={onLayoutRootView}>

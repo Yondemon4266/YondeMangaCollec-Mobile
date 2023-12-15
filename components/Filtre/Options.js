@@ -5,43 +5,69 @@ import { View, FlatList } from "react-native";
 import Tag from "../Tags/Tag";
 import { DonneesFiltrees } from "../../utils/DonneesFiltres";
 export default function Options({ isAnime, filterOptions, AddOption }) {
-  const [selectedData, setSelectedData] = useState([]);
+  const [itemsToShow, setItemsToShow] = useState(10);
+  const [listData, setListData] = useState({ ...DonneesFiltrees });
 
-  const dataFiltres = DonneesFiltrees;
+  function categoryToShow() {
+    if (filterOptions.mangaGenresOpen && !isAnime) {
+      return "mangaGenres";
+    } else if (filterOptions.magazinesOpen && !isAnime) {
+      return "magazines";
+    } else if (filterOptions.studiosOpen && isAnime) {
+      return "studios";
+    } else {
+      return "animeGenres";
+    }
+  }
+
+  function getData() {
+    setListData((prev) => {
+      let originalData = DonneesFiltrees[categoryToShow()]; // Sauvegarder les données d'origine
+
+      // Filtrer les données si nécessaire
+      let newData;
+      if (filterOptions.search) {
+        newData = originalData.filter((tag) =>
+          filterOptions.studiosOpen && isAnime
+            ? tag.titles[0].title
+                .toLowerCase()
+                .includes(filterOptions.search.toLowerCase())
+            : tag.name
+                .toLowerCase()
+                .includes(filterOptions.search.toLowerCase())
+        );
+      } else {
+        newData = originalData; // Réinitialiser avec les données d'origine
+      }
+
+      return {
+        ...prev,
+        [categoryToShow()]: newData,
+      };
+    });
+  }
 
   useEffect(() => {
-    let newData = [];
-
-    if (isAnime) {
-      if (filterOptions.studiosOpen) {
-        newData = dataFiltres.studios;
-      } else if (filterOptions.animeGenresOpen) {
-        newData = dataFiltres.animeGenres;
-      }
-    } else {
-      if (filterOptions.magazinesOpen) {
-        newData = dataFiltres.magazines;
-      } else if (filterOptions.mangaGenresOpen) {
-        newData = dataFiltres.mangaGenres;
-      }
-    }
-    newData = newData.filter((tag) =>
-      filterOptions.studiosOpen && isAnime
-        ? tag.titles[0].title
-            .toLowerCase()
-            .includes(filterOptions.search.toLowerCase())
-        : tag.name.toLowerCase().includes(filterOptions.search.toLowerCase())
-    );
-    setSelectedData(newData);
-  }, [filterOptions, isAnime]);
+    getData();
+  }, [filterOptions.search]);
+  useEffect(() => {
+    setItemsToShow(10);
+  }, [
+    filterOptions.mangaGenresOpen,
+    filterOptions.animesGenreOpen,
+    filterOptions.magazinesOpen,
+    filterOptions.studiosOpen,
+    isAnime,
+  ]);
 
   return (
     <View style={s.optionscontainer}>
       <FlatList
         contentContainerStyle={s.options}
-        data={selectedData}
+        data={listData[categoryToShow()].slice(0, itemsToShow)}
+        extraData={listData}
         numColumns={3}
-        initialNumToRender={10}
+        onEndReached={() => setItemsToShow((prev) => prev + 10)}
         renderItem={({ item }) => (
           <Tag
             onPress={() =>

@@ -9,48 +9,57 @@ import HeaderFiltre from "./HeaderFiltre";
 import OptionsSelected from "./OptionsSelected";
 import Options from "./Options";
 
-export const Filtre = (props) => {
-  const { isAnime, filterOptions, setFilterOptions, setIsSearchSubmit } = props;
 
+export const Filtre = ({ isAnime, filterOptions, dispatch }) => {
   const iconSize = 20;
 
   function ChangeFilterOptions(selectedOption) {
     if (isAnime) {
-      setFilterOptions((prev) => ({
-        ...prev,
-        animeGenresOpen:
-          selectedOption === "animeGenres" ? !prev.animeGenresOpen : false,
-        studiosOpen: selectedOption === "studios" ? !prev.studiosOpen : false,
-      }));
+      dispatch({
+        type: "SET_FILTER_OPTIONS",
+        payload: {
+          ...filterOptions,
+          animeGenresOpen:
+            selectedOption === "animeGenres"
+              ? !filterOptions.animeGenresOpen
+              : false,
+          studiosOpen:
+            selectedOption === "studios" ? !filterOptions.studiosOpen : false,
+          loading: true,
+        },
+      });
     } else {
-      setFilterOptions((prev) => ({
-        ...prev,
-        mangaGenresOpen:
-          selectedOption === "mangaGenres" ? !prev.mangaGenresOpen : false,
-        magazinesOpen:
-          selectedOption === "magazines" ? !prev.magazinesOpen : false,
-      }));
+      dispatch({
+        type: "SET_FILTER_OPTIONS",
+        payload: {
+          ...filterOptions,
+          mangaGenresOpen:
+            selectedOption === "mangaGenres"
+              ? !filterOptions.mangaGenresOpen
+              : false,
+          magazinesOpen:
+            selectedOption === "magazines"
+              ? !filterOptions.magazinesOpen
+              : false,
+          loading: true,
+        },
+      });
     }
   }
 
   function AddOption(filterId, filterName) {
-    setFilterOptions((prev) => {
-      const listKey = getListKey();
-
-      if (listKey && prev[listKey]) {
-        const list = prev[listKey];
-        const isOptionInList = list.find((item) => item.name === filterName);
-
-        if (!isOptionInList) {
-          return {
-            ...prev,
-            [listKey]: [...list, { id: filterId, name: filterName }],
-          };
-        }
-      }
-
-      return prev;
-    });
+    const listKey = getListKey();
+    const list = filterOptions[listKey];
+    const isOptionInList = list.find((item) => item.name === filterName);
+    if (!isOptionInList) {
+      dispatch({
+        type: "SET_FILTER_OPTIONS",
+        payload: {
+          ...filterOptions,
+          [listKey]: [...list, { id: filterId, name: filterName }],
+        },
+      });
+    }
 
     function getListKey() {
       if (filterOptions.animeGenresOpen && isAnime) {
@@ -68,59 +77,74 @@ export const Filtre = (props) => {
   }
 
   function RemoveOption(filterName) {
-    setFilterOptions((prev) => {
-      if (isAnime) {
-        return {
-          ...prev,
-          animeGenres: prev.animeGenres.filter(
+    if (isAnime) {
+      dispatch({
+        type: "SET_FILTER_OPTIONS",
+        payload: {
+          ...filterOptions,
+          animeGenres: filterOptions.animeGenres.filter(
             (genre) => genre.name !== filterName
           ),
-          studios: prev.studios.filter((studio) => studio.name !== filterName),
-        };
-      } else if (!isAnime) {
-        return {
-          ...prev,
-          mangaGenres: prev.mangaGenres.filter(
+          studios: filterOptions.studios.filter(
+            (studio) => studio.name !== filterName
+          ),
+        },
+      });
+    } else if (!isAnime) {
+      dispatch({
+        type: "SET_FILTER_OPTIONS",
+        payload: {
+          ...filterOptions,
+          mangaGenres: filterOptions.mangaGenres.filter(
             (genre) => genre.name !== filterName
           ),
-          magazines: prev.magazines.filter(
+          magazines: filterOptions.magazines.filter(
             (magazine) => magazine.name !== filterName
           ),
-        };
-      }
-      return prev;
-    });
+        },
+      });
+    }
   }
 
   function RemoveCategoryOptions() {
     if (isAnime) {
-      setFilterOptions((prev) => ({
-        ...prev,
-        animeGenres: [],
-        studios: [],
-      }));
+      dispatch({
+        type: "SET_FILTER_OPTIONS",
+        payload: {
+          ...filterOptions,
+          animeGenres: [],
+          studios: [],
+        },
+      });
     } else if (!isAnime) {
-      setFilterOptions((prev) => ({
-        ...prev,
-        mangaGenres: [],
-        magazines: [],
-      }));
+      dispatch({
+        type: "SET_FILTER_OPTIONS",
+        payload: {
+          ...filterOptions,
+          mangaGenres: [],
+          magazines: [],
+        },
+      });
     }
   }
   function UpdateFilterSearch(search) {
-    setFilterOptions((prev) => ({
-      ...prev,
-      search: search,
-    }));
+    dispatch({
+      type: "SET_FILTER_OPTIONS",
+      payload: {
+        ...filterOptions,
+        search: search,
+      },
+    });
   }
-
   function ClearFilterSearch() {
-    setFilterOptions((prev) => ({
-      ...prev,
-      search: "",
-    }));
+    dispatch({
+      type: "SET_FILTER_OPTIONS",
+      payload: {
+        ...filterOptions,
+        search: "",
+      },
+    });
   }
-
   return (
     <View style={s.container}>
       <ButtonComp
@@ -129,10 +153,13 @@ export const Filtre = (props) => {
         color={color5}
         styl={s.filterbutton}
         onPress={() =>
-          setFilterOptions((prev) => ({
-            ...prev,
-            isOpen: !prev.isOpen,
-          }))
+          dispatch({
+            type: "SET_FILTER_OPTIONS",
+            payload: {
+              ...filterOptions,
+              isOpen: !filterOptions.isOpen,
+            },
+          })
         }
       >
         Filtrer
@@ -141,9 +168,9 @@ export const Filtre = (props) => {
       {filterOptions.isOpen && (
         <>
           <HeaderFiltre
-            isAnime={isAnime}
             ChangeFilterOptions={ChangeFilterOptions}
             filterOptions={filterOptions}
+            isAnime={isAnime}
           />
           <SearchBar
             placeholder="Rechercher un tag"
@@ -166,8 +193,16 @@ export const Filtre = (props) => {
             isAnime={isAnime}
             filterOptions={filterOptions}
             AddOption={AddOption}
+            dispatch={dispatch}
           />
-          <ButtonComp onPress={() => setIsSearchSubmit(true)}>
+          <ButtonComp
+            onPress={() =>
+              dispatch({
+                type: "SET_IS_SEARCH_SUBMIT",
+                payload: true,
+              })
+            }
+          >
             Valider la recherche
           </ButtonComp>
         </>

@@ -1,5 +1,5 @@
 export default function ConvertDateFormat(date) {
-  if (date.length > 0) {
+  if (date) {
     const dateSplit = date.split("T")[0];
     const dateSplit2 = dateSplit.split("-");
 
@@ -9,8 +9,9 @@ export default function ConvertDateFormat(date) {
       dateSplit2[0],
     ];
     return dateSplit2.join("/");
+  } else {
+    return "";
   }
-  return "";
 }
 
 export function ConvertDay(day) {

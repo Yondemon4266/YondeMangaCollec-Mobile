@@ -7,13 +7,11 @@ import CustomInput from "../../components/CustomInput/CustomInput";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { authReducer } from "../../Redux/UserSlice";
-import { useEffect } from "react";
 export default function Connexion({ navigation }) {
   const dispatch = useDispatch();
   const {
     control,
     handleSubmit,
-    watch,
     setError,
     formState: { isSubmitting },
   } = useForm();

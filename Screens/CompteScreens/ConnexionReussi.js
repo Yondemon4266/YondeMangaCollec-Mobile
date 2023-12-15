@@ -1,6 +1,6 @@
 import { View, Image, Dimensions, ActivityIndicator } from "react-native";
 import React, { useEffect } from "react";
-import { color1, color3 } from "../../utils/Colors";
+import { color1 } from "../../utils/Colors";
 import img from "../../assets/logoapp.png";
 import { useDispatch } from "react-redux";
 import { authReducer } from "../../Redux/UserSlice";

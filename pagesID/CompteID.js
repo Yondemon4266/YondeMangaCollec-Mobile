@@ -1,25 +1,44 @@
-import {
-  View,
-  ImageBackground,
-  Image,
-  Modal,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import { View, ImageBackground, Image, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { authReducer } from "../Redux/UserSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { authReducer, getUserData } from "../Redux/UserSlice";
 import bg from "../assets/onizukabg.jpg";
 import img from "../assets/onizuka.jpg";
 import { s } from "../components/CatalogueHeader/CatalogueHeaderStyle";
 import Txt from "../components/Text/Txt";
-import { color1, color2, color3, color5 } from "../utils/Colors";
 import ButtonComp from "../components/Button/ButtonComp";
+import ConvertDateFormat from "../utils/ConvertDateFormat";
+import ModalComp from "./ModalComp";
 export default function CompteID() {
   const dispatch = useDispatch();
-  const [ModalVisible, setModalVisible] = useState(false);
-  const halfWidth = Dimensions.get("window").width / 1.3;
+  const userId = useSelector((state) => state.User.userId);
+  const userData = useSelector((state) => state.User.userData);
+
+  const verifData = userData && userData;
+  const [infos, setInfos] = useState({
+    email: "",
+    pseudo: "",
+    oldpassword: "",
+    password: "",
+    controlPassword: "",
+    emailVisible: false,
+    pseudoVisible: false,
+    passwordVisible: false,
+    modalVisible: false,
+    errors: {
+      email: "",
+      password: "",
+      pseudo: "",
+    },
+    success: {
+      email: "",
+      password: "",
+      pseudo: "",
+    },
+    loading: false,
+  });
+
   async function logout() {
     try {
       const response = await axios({
@@ -34,90 +53,204 @@ export default function CompteID() {
       dispatch(authReducer(false));
     }
   }
+
+  async function changeEmail() {
+    const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (regexEmail.test(infos.email)) {
+      try {
+        const response = await axios({
+          method: "patch",
+          url: `https://server-yondemangacollec.onrender.com/api/user/emailchange/${
+            userId && userId
+          }`,
+          data: {
+            email: infos.email,
+          },
+        });
+        if (response) {
+          setInfos((prev) => {
+            return {
+              ...prev,
+              success: {
+                ...prev.success,
+                password: "",
+                email: "Votre adresse a été changée avec succès.",
+                pseudo: "",
+              },
+            };
+          });
+          dispatch(getUserData(userId));
+        }
+      } catch (err) {
+        setInfos((prev) => {
+          return {
+            ...prev,
+            errors: {
+              ...prev.errors,
+              email: "Cette adresse email est déjà utilisée",
+              password: "",
+              pseudo: "",
+            },
+          };
+        });
+      }
+    } else {
+      setInfos((prev) => {
+        return {
+          ...prev,
+          errors: {
+            ...prev.errors,
+            email: "Votre nouvelle adresse n'est pas conforme",
+            pseudo: "",
+            password: "",
+          },
+        };
+      });
+    }
+  }
+  verifData;
+
+  async function changePseudo() {
+    if (infos.pseudo.length >= 3) {
+      try {
+        const response = await axios({
+          method: "patch",
+          url: `https://server-yondemangacollec.onrender.com/api/user/pseudochange/${
+            userId && userId
+          }`,
+          data: {
+            pseudo: infos.pseudo,
+          },
+        });
+        if (response) {
+          setInfos((prev) => {
+            return {
+              ...prev,
+              success: {
+                ...prev.success,
+                pseudo: "Votre pseudo a été changé avec succès.",
+                password: "",
+                email: "",
+              },
+            };
+          });
+          dispatch(getUserData(userId));
+        }
+      } catch (err) {
+        setInfos((prev) => {
+          return {
+            ...prev,
+            errors: {
+              ...prev.errors,
+              pseudo: "Ce pseudo est déjà utilisé",
+              password: "",
+              email: "",
+            },
+          };
+        });
+      }
+    } else {
+      setInfos((prev) => {
+        return {
+          ...prev,
+          errors: {
+            ...prev.errors,
+            pseudo: "Votre nouveau pseudo doit dépasser 3 caractères",
+          },
+        };
+      });
+    }
+  }
   return (
     <View style={{ flex: 1, gap: 15 }}>
       <ImageBackground source={bg} resizeMode="cover" style={s.bg}>
         <Image source={img} style={s.img} />
       </ImageBackground>
       <View style={s.infos}>
-        <Txt styles={s.title}>Yondemon</Txt>
+        <Txt styles={s.title}>{verifData.pseudo}</Txt>
+        <Txt styles={s.level}>Niveau {verifData.level} </Txt>
       </View>
       <View style={{ paddingHorizontal: 20 }}>
         <View style={s.lines}>
-          <Txt>Gestion du compte</Txt>
+          <Txt styles={[s.texttitle, { fontFamily: "Literata-SemiBold" }]}>
+            Gestion du compte
+          </Txt>
           <View style={s.line}>
-            <Txt styles={s.texttitle}>Email</Txt>
-            <Txt styles={s.text2}>Modifier</Txt>
+            <Txt styles={s.texttitle}>Email {verifData.email}</Txt>
+            <TouchableOpacity
+              onPress={() =>
+                setInfos((prev) => {
+                  return {
+                    ...prev,
+                    emailVisible: !prev.emailVisible,
+                  };
+                })
+              }
+            >
+              <Txt>Modifier</Txt>
+            </TouchableOpacity>
           </View>
           <View style={s.line}>
-            <Txt styles={s.texttitle}>Nom d'utilisateur</Txt>
-            <Txt>Modifier</Txt>
+            <Txt styles={s.texttitle}>Nom d'utilisateur {verifData.pseudo}</Txt>
+            <TouchableOpacity
+              onPress={() =>
+                setInfos((prev) => {
+                  return {
+                    ...prev,
+                    pseudoVisible: !prev.pseudoVisible,
+                  };
+                })
+              }
+            >
+              <Txt>Modifier</Txt>
+            </TouchableOpacity>
           </View>
           <View style={s.line}>
             <Txt styles={s.texttitle}>Mot de passe</Txt>
-            <Txt>Modifier</Txt>
+            <TouchableOpacity
+              onPress={() =>
+                setInfos((prev) => {
+                  return {
+                    ...prev,
+                    passwordVisible: !prev.passwordVisible,
+                  };
+                })
+              }
+            >
+              <Txt>Modifier</Txt>
+            </TouchableOpacity>
           </View>
           <View style={s.line}>
-            <Txt>Compte créé le 12/01...</Txt>
+            <Txt>Compte créé le {ConvertDateFormat(userData.createdAt)}</Txt>
           </View>
-          <View style={s.line}>
-            <Txt>J'aime l'App ♡</Txt>
-            <Txt></Txt>
-          </View>
+          <TouchableOpacity>
+            <View style={s.line}>
+              <Txt>J'aime l'App ♡</Txt>
+              <Txt>Suivez moi sur Github !</Txt>
+            </View>
+          </TouchableOpacity>
         </View>
 
-        <ButtonComp onPress={() => setModalVisible(!ModalVisible)}>
+        <ButtonComp
+          onPress={() =>
+            setInfos((prev) => {
+              return {
+                ...prev,
+                modalVisible: !prev.modalVisible,
+              };
+            })
+          }
+        >
           Déconnexion
         </ButtonComp>
-        <Modal
-          visible={ModalVisible}
-          animationType="fade"
-          transparent
-          onRequestClose={() => setModalVisible(!ModalVisible)}
-        >
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 22,
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: color5,
-                padding: 20,
-                width: halfWidth,
-                height: 150,
-                borderRadius: 8,
-                gap: 25,
-              }}
-            >
-              <Txt styles={{ textAlign: "center", fontSize: 16 }}>
-                Êtes vous sûr de vouloir vous déconnecter?
-              </Txt>
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 30,
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                  flex: 1,
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => setModalVisible(!ModalVisible)}
-                >
-                  <Txt styles={{ fontSize: 16 }}>Fermer</Txt>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={logout}>
-                  <Txt styles={{ fontSize: 16 }}>Déconnexion</Txt>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
       </View>
+      <ModalComp
+        infos={infos}
+        setInfos={setInfos}
+        logout={logout}
+        changeEmail={changeEmail}
+        changePseudo={changePseudo}
+      />
     </View>
   );
 }
