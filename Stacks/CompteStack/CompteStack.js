@@ -4,6 +4,8 @@ import Compte from "../../pages/Compte";
 import { useSelector } from "react-redux";
 import CompteID from "../../pagesID/CompteID";
 import ConnexionReussi from "../../Screens/CompteScreens/ConnexionReussi";
+import Univers from "../../components/Univers/Univers";
+import SelectVillageMarine from "../../components/Univers/SelectVillageMarine";
 
 const AccountStack = createNativeStackNavigator();
 
@@ -24,6 +26,11 @@ export default function CompteStack() {
           component={ConnexionReussi}
         />
       )}
+      <AccountStack.Screen name={"Univers"} component={Univers} />
+      <AccountStack.Screen
+        name={"SelectVillageMarine"}
+        component={SelectVillageMarine}
+      />
     </AccountStack.Navigator>
   );
 }

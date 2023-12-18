@@ -15,6 +15,7 @@ export default function CompteID() {
   const userId = useSelector((state) => state.User.userId);
   const userData = useSelector((state) => state.User.userData);
 
+
   const verifData = userData && userData;
   const [infos, setInfos] = useState({
     email: "",
@@ -38,6 +39,7 @@ export default function CompteID() {
     },
     loading: false,
   });
+  console.log(infos.errors.password);
 
   async function logout() {
     try {
@@ -46,10 +48,10 @@ export default function CompteID() {
         url: "https://server-yondemangacollec.onrender.com/api/user/logout",
         withCredentials: true,
       });
-      dispatch(authReducer(false));
       console.log("déconnecté !");
     } catch (err) {
       console.log("déconnecté avec erreur ?! ", err);
+    } finally {
       dispatch(authReducer(false));
     }
   }
@@ -77,6 +79,12 @@ export default function CompteID() {
                 email: "Votre adresse a été changée avec succès.",
                 pseudo: "",
               },
+              errors: {
+                ...prev.errors,
+                pseudo: "",
+                password: "",
+                email: "",
+              },
             };
           });
           dispatch(getUserData(userId));
@@ -91,6 +99,12 @@ export default function CompteID() {
               password: "",
               pseudo: "",
             },
+            success: {
+              ...prev.success,
+              pseudo: "",
+              password: "",
+              email: "",
+            },
           };
         });
       }
@@ -104,11 +118,16 @@ export default function CompteID() {
             pseudo: "",
             password: "",
           },
+          success: {
+            ...prev.success,
+            pseudo: "",
+            password: "",
+            email: "",
+          },
         };
       });
     }
   }
-  verifData;
 
   async function changePseudo() {
     if (infos.pseudo.length >= 3) {
@@ -132,6 +151,12 @@ export default function CompteID() {
                 password: "",
                 email: "",
               },
+              errors: {
+                ...prev.errors,
+                pseudo: "",
+                password: "",
+                email: "",
+              },
             };
           });
           dispatch(getUserData(userId));
@@ -146,6 +171,12 @@ export default function CompteID() {
               password: "",
               email: "",
             },
+            success: {
+              ...prev.success,
+              pseudo: "",
+              password: "",
+              email: "",
+            },
           };
         });
       }
@@ -156,9 +187,128 @@ export default function CompteID() {
           errors: {
             ...prev.errors,
             pseudo: "Votre nouveau pseudo doit dépasser 3 caractères",
+            password: "",
+            email: "",
+          },
+          success: {
+            ...prev.success,
+            pseudo: "",
+            password: "",
+            email: "",
           },
         };
       });
+    }
+  }
+
+  async function changePassword() {
+    const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{6,}$/;
+
+    if (infos.password.length < 6 || infos.oldpassword.length < 6) {
+      setInfos((prev) => {
+        return {
+          ...prev,
+          errors: {
+            ...prev.errors,
+            pseudo: "",
+            password: "Le mot de passe doît contenir au moins 6 caractères",
+            email: "",
+          },
+          success: {
+            ...prev.success,
+            pseudo: "",
+            password: "",
+            email: "",
+          },
+        };
+      });
+    } else if (infos.password !== infos.controlPassword) {
+      setInfos((prev) => {
+        return {
+          ...prev,
+          errors: {
+            ...prev.errors,
+            pseudo: "",
+            password:
+              "Le nouveau mot de passe et la confirmation sont différents",
+            email: "",
+          },
+          success: {
+            ...prev.success,
+            pseudo: "",
+            password: "",
+            email: "",
+          },
+        };
+      });
+    } else if (!regexPassword.test(infos.password)) {
+      setInfos((prev) => {
+        return {
+          ...prev,
+          errors: {
+            ...prev.errors,
+            pseudo: "",
+            password:
+              "Le mot de passe doit contenir au moins 6 caractères dont 1 majuscule et 1 chiffre",
+            email: "",
+          },
+          success: {
+            ...prev.success,
+            pseudo: "",
+            password: "",
+            email: "",
+          },
+        };
+      });
+    } else {
+      try {
+        const response = await axios({
+          method: "patch",
+          url: `https://server-yondemangacollec.onrender.com/api/user/passwordchange/${
+            userId && userId
+          }`,
+          data: {
+            password: infos.password,
+            oldpassword: infos.oldpassword,
+          },
+        });
+        setInfos((prev) => {
+          return {
+            ...prev,
+            errors: {
+              ...prev.errors,
+              pseudo: "",
+              password: "",
+              email: "",
+            },
+            success: {
+              ...prev.success,
+              pseudo: "",
+              password: response.data.message,
+              email: "",
+            },
+          };
+        });
+        dispatch(getUserData(userId));
+      } catch (err) {
+        setInfos((prev) => {
+          return {
+            ...prev,
+            errors: {
+              ...prev.errors,
+              pseudo: "",
+              password: err.response.data.message,
+              email: "",
+            },
+            success: {
+              ...prev.success,
+              pseudo: "",
+              password: "",
+              email: "",
+            },
+          };
+        });
+      }
     }
   }
   return (
@@ -250,6 +400,7 @@ export default function CompteID() {
         logout={logout}
         changeEmail={changeEmail}
         changePseudo={changePseudo}
+        changePassword={changePassword}
       />
     </View>
   );

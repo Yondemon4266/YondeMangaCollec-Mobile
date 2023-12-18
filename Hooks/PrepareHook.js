@@ -65,6 +65,7 @@ export default function Preparation() {
         const UserDataResponse = await axios({
           method: "get",
           url: `https://server-yondemangacollec.onrender.com/api/user/${userId}`,
+          withCredentials: true,
         });
         if (UserDataResponse) {
           dispatch(putUserData(UserDataResponse.data));

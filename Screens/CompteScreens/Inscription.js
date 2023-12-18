@@ -126,11 +126,11 @@ export default function Inscription({ navigation }) {
               message: "Votre mot de passe ne peut excéder 20 caractères",
             },
             minLength: {
-              value: 8,
-              message: "Le mot de passe doit contenir au moins 8 caractères",
+              value: 6,
+              message: "Le mot de passe doit contenir au moins 6 caractères",
             },
             pattern: {
-              value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/,
+              value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{6,}$/,
               message:
                 "Le mot de passe doit contenir au moins une majuscule et un chiffre",
             },

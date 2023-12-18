@@ -10,7 +10,7 @@ import OptionsSelected from "./OptionsSelected";
 import Options from "./Options";
 
 
-export const Filtre = ({ isAnime, filterOptions, dispatch }) => {
+export const Filtre = ({ isAnime, filterOptions, dispatch, searchData }) => {
   const iconSize = 20;
 
   function ChangeFilterOptions(selectedOption) {
@@ -195,14 +195,7 @@ export const Filtre = ({ isAnime, filterOptions, dispatch }) => {
             AddOption={AddOption}
             dispatch={dispatch}
           />
-          <ButtonComp
-            onPress={() =>
-              dispatch({
-                type: "SET_IS_SEARCH_SUBMIT",
-                payload: true,
-              })
-            }
-          >
+          <ButtonComp onPress={() => searchData()}>
             Valider la recherche
           </ButtonComp>
         </>

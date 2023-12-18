@@ -11,6 +11,7 @@ export default function CustomInput({
   rules,
   placeholder,
   secureTextEntry,
+
 }) {
   return (
     <Controller

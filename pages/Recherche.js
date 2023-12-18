@@ -24,8 +24,9 @@ export default function Recherche({ navigation }) {
     displayedData,
     loading,
   } = state;
+  console.log("is ", isSearchSubmit);
+  console.log("isopen ", filterOptions.isOpen);
 
-  console.log(isSearchSubmit);
   function UpdateSearch(search) {
     dispatch({ type: "SET_SEARCH", payload: search });
   }
@@ -35,12 +36,12 @@ export default function Recherche({ navigation }) {
 
   async function searchData() {
     dispatch({ type: "SET_LOADING", payload: true });
-    if (isSearchSubmit) {
-      dispatch({
-        type: "SET_FILTER_OPTIONS",
-        payload: { ...filterOptions, isOpen: false },
-      });
-    }
+    dispatch({ type: "SET_IS_SEARCH_SUBMIT", payload: true });
+
+    dispatch({
+      type: "SET_FILTER_OPTIONS",
+      payload: { ...filterOptions, isOpen: false },
+    });
 
     const listGenresIds = isAnime
       ? filterOptions.animeGenres.map((genre) => genre.id)
@@ -72,7 +73,6 @@ export default function Recherche({ navigation }) {
       const response = await axios.get(
         apiUrl + (querySearch ? `&${querySearch}` : "")
       );
-      dispatch({ type: "SET_IS_SEARCH_SUBMIT", payload: false });
       dispatch({
         type: "SET_DISPLAYED_DATA",
         payload: {
@@ -89,6 +89,7 @@ export default function Recherche({ navigation }) {
       console.log("erreur API, trop d'appel surement", error);
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
+      dispatch({ type: "SET_IS_SEARCH_SUBMIT", payload: false });
     }
   }
 
@@ -105,7 +106,6 @@ export default function Recherche({ navigation }) {
         value={search}
         onClear={ClearSearch}
         onSubmitEditing={() => {
-          dispatch({ type: "SET_IS_SEARCH_SUBMIT", payload: true });
           searchData();
         }}
       />
@@ -128,6 +128,7 @@ export default function Recherche({ navigation }) {
           isAnime={isAnime}
           filterOptions={filterOptions}
           dispatch={dispatch}
+          searchData={searchData}
         />
         <View style={{ paddingVertical: 20, flex: 1 }}>
           {loading ? (

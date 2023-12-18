@@ -5,6 +5,7 @@ import img from "../../assets/logoapp.png";
 import { useDispatch } from "react-redux";
 import { authReducer } from "../../Redux/UserSlice";
 import Txt from "../../components/Text/Txt";
+import { s } from "../../components/Univers/UniversStyle";
 export default function ConnexionReussi({ navigation }) {
   const widthIcon = Dimensions.get("window").width / 1.2;
   const heightIcon = 300;
@@ -12,19 +13,12 @@ export default function ConnexionReussi({ navigation }) {
   useEffect(() => {
     const timeOut = setTimeout(() => {
       dispatch(authReducer(true));
-      navigation.navigate("AccueilStack");
+      navigation.navigate("Univers");
     }, 3000);
     return () => clearTimeout(timeOut);
   }, [navigation]);
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        gap: 10,
-      }}
-    >
+    <View style={s.container}>
       <Image
         source={img}
         style={{ width: widthIcon, height: heightIcon, resizeMode: "cover" }}

@@ -6,7 +6,7 @@ export const s = StyleSheet.create({
   },
   sousContainer: {
     flex: 1,
-    gap: 10,
+    gap: 15,
     marginBottom: 10,
   },
   title: {
@@ -33,5 +33,29 @@ export const s = StyleSheet.create({
     paddingHorizontal: 30,
     alignSelf: "center",
     maxHeight: 170,
+  },
+  loggedcomps: {
+    paddingHorizontal: 30,
+    gap: 10,
+  },
+  elementcontainer: {
+    gap: 5,
+    position: "relative",
+  },
+  element: {
+    borderWidth: 1,
+    alignSelf: "flex-start",
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 3,
+  },
+  submitbutton: {
+    borderWidth: 1,
+    alignSelf: "flex-start",
+    borderRadius: 3,
+    padding: 3,
+    position: "absolute",
+    right: -10,
+    bottom: 25,
   },
 });

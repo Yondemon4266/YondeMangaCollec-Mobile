@@ -16,6 +16,7 @@ export default function ModalComp({
   logout,
   changeEmail,
   changePseudo,
+  changePassword,
 }) {
   var keyTrue = null;
   for (var cle in infos) {
@@ -148,6 +149,25 @@ export default function ModalComp({
           };
         });
       }
+    } else if (infos.passwordVisible) {
+      try {
+        setInfos((prev) => {
+          return {
+            ...prev,
+            loading: true,
+          };
+        });
+        await changePassword();
+      } catch (error) {
+        console.error("Erreur lors du changement de mot de passe : ", error);
+      } finally {
+        setInfos((prev) => {
+          return {
+            ...prev,
+            loading: false,
+          };
+        });
+      }
     }
   };
   const valeursInputs = valeursInputsFunction();
@@ -157,26 +177,37 @@ export default function ModalComp({
   const CenterVisible =
     keyTrue !== null && keyTrue !== "modalVisible" ? true : false;
 
+  const renderMessage = (isVisible, isSuccess, isError, message) => {
+    return (
+      isVisible &&
+      ((isSuccess && !isError) || (!isSuccess && isError)) && (
+        <Txt styles={isSuccess && !isError ? s.success : s.error}>
+          {message}
+        </Txt>
+      )
+    );
+  };
+
   const ErrorSuccessMsg = (
     <>
-      {!infos.errors.password && infos.success.password && (
-        <Txt styles={s.success}>{infos.success.password}</Txt>
-      )}
-      {!infos.errors.email && infos.success.email && (
-        <Txt styles={s.success}>{infos.success.email}</Txt>
-      )}
-      {!infos.errors.pseudo && infos.success.pseudo && (
-        <Txt styles={s.success}>{infos.success.pseudo}</Txt>
-      )}
+      {renderMessage(
+        infos.passwordVisible,
+        infos.success.password,
+        infos.errors.password,
 
-      {!infos.success.password && infos.errors.password && (
-        <Txt styles={s.error}>{infos.errors.password}</Txt>
+        infos.success.password || infos.errors.password
       )}
-      {!infos.success.email && infos.errors.email && (
-        <Txt styles={s.error}>{infos.errors.email}</Txt>
+      {renderMessage(
+        infos.emailVisible,
+        infos.success.email,
+        infos.errors.email,
+        infos.success.email || infos.errors.email
       )}
-      {!infos.success.pseudo && infos.errors.pseudo && (
-        <Txt styles={s.error}>{infos.errors.pseudo}</Txt>
+      {renderMessage(
+        infos.pseudoVisible,
+        infos.success.pseudo,
+        infos.errors.pseudo,
+        infos.success.pseudo || infos.errors.pseudo
       )}
     </>
   );
