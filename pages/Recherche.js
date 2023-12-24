@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useMemo } from "react";
+import React, { useEffect, useContext, useMemo, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { SearchBar } from "@rneui/themed";
@@ -14,18 +14,16 @@ import CardList from "../components/CardList/CardList";
 
 export default function Recherche({ navigation }) {
   const { state, dispatch } = useContext(SearchContext);
-  const {
-    isAnime,
-    search,
-    filterOptions,
-    pageAnime,
-    pageManga,
-    isSearchSubmit,
-    displayedData,
-    loading,
-  } = state;
-  console.log("is ", isSearchSubmit);
-  console.log("isopen ", filterOptions.isOpen);
+  const { isAnime, search, filterOptions } = state;
+  const [isSearchSubmit, setIsSearchSubmit] = useState(false);
+  const [pageAnime, setPageAnime] = useState(1);
+  const [pageManga, setPageManga] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadingScroll, setLoadingScroll] = useState(false);
+  const [displayedData, setDisplayedData] = useState({
+    animes: [],
+    mangas: [],
+  });
 
   function UpdateSearch(search) {
     dispatch({ type: "SET_SEARCH", payload: search });
@@ -35,9 +33,9 @@ export default function Recherche({ navigation }) {
   }
 
   async function searchData() {
-    dispatch({ type: "SET_LOADING", payload: true });
-    dispatch({ type: "SET_IS_SEARCH_SUBMIT", payload: true });
-
+    if (!loadingScroll) {
+      setLoading(true);
+    }
     dispatch({
       type: "SET_FILTER_OPTIONS",
       payload: { ...filterOptions, isOpen: false },
@@ -73,81 +71,93 @@ export default function Recherche({ navigation }) {
       const response = await axios.get(
         apiUrl + (querySearch ? `&${querySearch}` : "")
       );
-      dispatch({
-        type: "SET_DISPLAYED_DATA",
-        payload: {
-          ...displayedData,
+
+      setDisplayedData((prev) => {
+        return {
+          ...prev,
           [isAnime ? "animes" : "mangas"]: isSearchSubmit
             ? response.data.data
-            : [
-                ...displayedData[isAnime ? "animes" : "mangas"],
-                ...response.data.data,
-              ],
-        },
+            : [...prev[isAnime ? "animes" : "mangas"], ...response.data.data],
+        };
       });
     } catch (error) {
       console.log("erreur API, trop d'appel surement", error);
     } finally {
-      dispatch({ type: "SET_LOADING", payload: false });
-      dispatch({ type: "SET_IS_SEARCH_SUBMIT", payload: false });
+      setLoading(false);
+      setLoadingScroll(false);
+      setIsSearchSubmit(false);
     }
   }
-
-  const SearchBarMemo = useMemo(
-    () => (
-      <SearchBar
-        placeholder="Rechercher un élément..."
-        containerStyle={searchbarStyle.searchbarfilters}
-        inputContainerStyle={searchbarStyle.searchbarfiltersinput}
-        inputStyle={searchbarStyle.searchbartext}
-        leftIconContainerStyle={searchbarStyle.searchbaricon}
-        lightTheme={true}
-        onChangeText={UpdateSearch}
-        value={search}
-        onClear={ClearSearch}
-        onSubmitEditing={() => {
-          searchData();
-        }}
-      />
-    ),
-    [search, UpdateSearch, ClearSearch]
-  );
 
   useEffect(() => {
     searchData();
   }, [pageAnime, pageManga, isAnime]);
 
+  useEffect(() => {
+    if (isSearchSubmit) {
+      isAnime ? setPageAnime(1) : setPageManga(1);
+      searchData();
+    }
+  }, [isSearchSubmit]);
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={s.container}>
         <View style={s.header}>
-          {SearchBarMemo}
+          <SearchBar
+            placeholder="Rechercher un élément..."
+            containerStyle={searchbarStyle.searchbarfilters}
+            inputContainerStyle={searchbarStyle.searchbarfiltersinput}
+            inputStyle={searchbarStyle.searchbartext}
+            leftIconContainerStyle={searchbarStyle.searchbaricon}
+            lightTheme={true}
+            onChangeText={UpdateSearch}
+            value={search}
+            onClear={ClearSearch}
+            onSubmitEditing={() => {
+              setIsSearchSubmit((prev) => {
+                return !prev;
+              });
+            }}
+          />
           <AnimeManga isAnime={isAnime} dispatch={dispatch} />
         </View>
         <Filtre
           isAnime={isAnime}
           filterOptions={filterOptions}
           dispatch={dispatch}
-          searchData={searchData}
+          setIsSearchSubmit={setIsSearchSubmit}
         />
         <View style={{ paddingVertical: 20, flex: 1 }}>
           {loading ? (
             <ActivityIndicator size={"large"} />
-          ) : displayedData.animes.length === 0 &&
-            displayedData.mangas.length === 0 ? (
-            <Txt styles={{ textAlign: "center", lineHeight: 400 }}>
-              Aucune oeuvre trouvé avec cette recherche.
-            </Txt>
           ) : (
             <CardList
               isAnime={isAnime}
               dispatch={dispatch}
-              pageAnime={pageAnime}
-              pageManga={pageManga}
+              setPageAnime={setPageAnime}
+              setPageManga={setPageManga}
+              setLoadingScroll={setLoadingScroll}
               displayedData={displayedData}
-              loading={loading}
               navigation={navigation}
+              loadingScroll={loadingScroll}
             />
+          )}
+          {!loading && loadingScroll && (
+            <ActivityIndicator
+              size={"large"}
+              style={{ position: "absolute", bottom: 20, left: "45%" }}
+            />
+          )}
+          {isAnime && displayedData.animes.length === 0 && !loading && (
+            <Txt styles={{ textAlign: "center", lineHeight: 400 }}>
+              Aucune oeuvre trouvé avec cette recherche.
+            </Txt>
+          )}
+          {!isAnime && !loading && displayedData.mangas.length === 0 && (
+            <Txt styles={{ textAlign: "center", lineHeight: 400 }}>
+              Aucune oeuvre trouvé avec cette recherche.
+            </Txt>
           )}
         </View>
       </SafeAreaView>

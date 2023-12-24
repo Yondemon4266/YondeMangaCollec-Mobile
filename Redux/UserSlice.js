@@ -4,9 +4,11 @@ import axios from "axios";
 export const UserSlice = createSlice({
   name: "User",
   initialState: {
-    userId: "",
+    userId: "p",
     userData: [],
     isLogged: false,
+    optionsFinished: false,
+    isCompare: false,
   },
   reducers: {
     authReducer: (state, action) => {
@@ -18,10 +20,22 @@ export const UserSlice = createSlice({
     putUserData: (state, action) => {
       state.userData = action.payload;
     },
+    changeOptionsFinished: (state, action) => {
+      state.optionsFinished = action.payload;
+    },
+    setIsCompare: (state, action) => {
+      state.isCompare = action.payload;
+    },
   },
 });
 
-export const { authReducer, getUserId, putUserData } = UserSlice.actions;
+export const {
+  authReducer,
+  getUserId,
+  putUserData,
+  changeOptionsFinished,
+  setIsCompare,
+} = UserSlice.actions;
 
 export const getUserData = (id) => {
   return async (dispatch) => {

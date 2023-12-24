@@ -1,22 +1,35 @@
-import { View, ImageBackground, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  ImageBackground,
+  Image,
+  TouchableOpacity,
+  Pressable,
+  Linking,
+} from "react-native";
 import React, { useState } from "react";
 import axios from "axios";
+import * as ImagePicker from "expo-image-picker";
 import { useDispatch, useSelector } from "react-redux";
-import { authReducer, getUserData } from "../Redux/UserSlice";
+import {
+  authReducer,
+  changeOptionsFinished,
+  getUserData,
+  getUserId,
+} from "../Redux/UserSlice";
 import bg from "../assets/onizukabg.jpg";
 import img from "../assets/onizuka.jpg";
 import { s } from "../components/CatalogueHeader/CatalogueHeaderStyle";
+import Cookies from "js-cookie";
 import Txt from "../components/Text/Txt";
 import ButtonComp from "../components/Button/ButtonComp";
 import ConvertDateFormat from "../utils/ConvertDateFormat";
 import ModalComp from "./ModalComp";
+import { ActivityIndicator } from "react-native";
 export default function CompteID() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.User.userId);
   const userData = useSelector((state) => state.User.userData);
 
-
-  const verifData = userData && userData;
   const [infos, setInfos] = useState({
     email: "",
     pseudo: "",
@@ -39,7 +52,7 @@ export default function CompteID() {
     },
     loading: false,
   });
-  console.log(infos.errors.password);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function logout() {
     try {
@@ -52,7 +65,10 @@ export default function CompteID() {
     } catch (err) {
       console.log("déconnecté avec erreur ?! ", err);
     } finally {
+      Cookies.remove("jwt");
       dispatch(authReducer(false));
+      dispatch(changeOptionsFinished(false));
+      dispatch(getUserId("p"));
     }
   }
 
@@ -311,14 +327,92 @@ export default function CompteID() {
       }
     }
   }
+
+  async function pickImageAsync(bgorimg) {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        quality: 1,
+        allowsEditing: true,
+      });
+
+      if (result.canceled) {
+        alert("Aucune image sélectionnée");
+      } else {
+        setIsLoading(true);
+        const formData = new FormData();
+        formData.append("image", {
+          uri: result.assets[0].uri,
+          name: "image",
+          type: "image/jpeg",
+        });
+
+        if (bgorimg === "bg") {
+          await axios.patch(
+            `https://server-yondemangacollec.onrender.com/api/user/bgpatch/${userId}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          await dispatch(getUserData(userId));
+        } else if (bgorimg === "img") {
+          await axios.patch(
+            `https://server-yondemangacollec.onrender.com/api/user/imgpatch/${userId}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          await dispatch(getUserData(userId));
+        }
+      }
+    } catch (err) {
+      console.log(err.response.data.message);
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1500);
+    }
+  }
+
   return (
     <View style={{ flex: 1, gap: 15 }}>
-      <ImageBackground source={bg} resizeMode="cover" style={s.bg}>
-        <Image source={img} style={s.img} />
-      </ImageBackground>
+      <Pressable onPress={() => pickImageAsync("bg")}>
+        <ImageBackground
+          source={
+            userData && userData?.bgimg
+              ? {
+                  uri: `https://server-yondemangacollec.onrender.com/images/${userData.bgimg}`,
+                }
+              : bg
+          }
+          resizeMode="cover"
+          style={s.bg}
+        />
+      </Pressable>
+      {isLoading && <ActivityIndicator size={"large"} style={{ zIndex: 10 }} />}
+      <Pressable style={s.buttonimg} onPress={() => pickImageAsync("img")}>
+        <Image
+          source={
+            userData && userData?.bgimg
+              ? {
+                  uri: `https://server-yondemangacollec.onrender.com/images/${userData.img}`,
+                }
+              : img
+          }
+          style={s.img}
+        />
+      </Pressable>
+
       <View style={s.infos}>
-        <Txt styles={s.title}>{verifData.pseudo}</Txt>
-        <Txt styles={s.level}>Niveau {verifData.level} </Txt>
+        <Txt styles={s.title}>{userData && userData.pseudo}</Txt>
+        <Txt styles={s.level}>
+          Niveau {Math.floor(userData && userData.level)}{" "}
+        </Txt>
       </View>
       <View style={{ paddingHorizontal: 20 }}>
         <View style={s.lines}>
@@ -326,7 +420,7 @@ export default function CompteID() {
             Gestion du compte
           </Txt>
           <View style={s.line}>
-            <Txt styles={s.texttitle}>Email {verifData.email}</Txt>
+            <Txt styles={s.texttitle}>Email {userData && userData.email}</Txt>
             <TouchableOpacity
               onPress={() =>
                 setInfos((prev) => {
@@ -341,7 +435,9 @@ export default function CompteID() {
             </TouchableOpacity>
           </View>
           <View style={s.line}>
-            <Txt styles={s.texttitle}>Nom d'utilisateur {verifData.pseudo}</Txt>
+            <Txt styles={s.texttitle}>
+              Nom d'utilisateur {userData && userData.pseudo}
+            </Txt>
             <TouchableOpacity
               onPress={() =>
                 setInfos((prev) => {
@@ -371,9 +467,11 @@ export default function CompteID() {
             </TouchableOpacity>
           </View>
           <View style={s.line}>
-            <Txt>Compte créé le {ConvertDateFormat(userData.createdAt)}</Txt>
+            <Txt>
+              Compte créé le {ConvertDateFormat(userData && userData.createdAt)}
+            </Txt>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL("https://github.com/Yondemon4266")}>
             <View style={s.line}>
               <Txt>J'aime l'App ♡</Txt>
               <Txt>Suivez moi sur Github !</Txt>

@@ -4,7 +4,7 @@ import { s } from "./CardScreenStyle";
 import CardScreenHeader from "../../components/CardScreen/CardScreenHeader";
 import Txt from "../../components/Text/Txt";
 import Tag from "../../components/Tags/Tag";
-import { color5, colorManga, color1, color4 } from "../../utils/Colors";
+import { color5, colorManga, color1 } from "../../utils/Colors";
 import Stars from "../../components/stars/Stars";
 import ButtonComp from "../../components/Button/ButtonComp";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,44 +12,59 @@ import { getUserData } from "../../Redux/UserSlice";
 import axios from "axios";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { ActivityIndicator } from "react-native";
 export default function CardScreen({ route, navigation }) {
-  const userData = useSelector((state) => state.User.userData);
   const userId = useSelector((state) => state.User.userId);
-  const { data } = route.params;
+  const userData = useSelector((state) => state.User.userData);
+  const { data, isFriendPage, friendData } = route.params;
   const isLogged = useSelector((state) => state.User.isLogged);
 
+  const isInCollecList =
+    isLogged &&
+    !isLoading &&
+    userData &&
+    userData?.colleclist?.find((card) => card.mal_id === data.mal_id);
+  const itemIndex =
+    isLogged &&
+    userData &&
+    userData?.colleclist?.findIndex((element) => element.mal_id == data.mal_id);
+  const itemIndexFriend =
+    isLogged &&
+    friendData &&
+    friendData?.colleclist?.findIndex(
+      (element) => element.mal_id == data.mal_id
+    );
+
   const [infos, setInfos] = useState({
-    bookmark: "",
-    commentary: "",
+    bookmark:
+      isLogged &&
+      !isFriendPage &&
+      userData &&
+      userData?.colleclist[itemIndex]?.bookMarkValue
+        ? userData?.colleclist[itemIndex]?.bookMarkValue
+        : friendData?.colleclist[itemIndexFriend]?.bookMarkValue
+        ? friendData?.colleclist[itemIndexFriend]?.bookMarkValue
+        : "",
+    commentary:
+      isLogged &&
+      !isFriendPage &&
+      userData &&
+      userData?.colleclist[itemIndex]?.commentary
+        ? userData?.colleclist[itemIndex]?.commentary
+        : friendData?.colleclist[itemIndexFriend]?.commentary
+        ? friendData?.colleclist[itemIndexFriend]?.commentary
+        : "",
     msgBookMark: "",
     msgCommentary: "",
   });
-  const dispatch = useDispatch();
-  const isInCollecList = userData.colleclist.find(
-    (card) => card.mal_id === data.mal_id
-  );
 
-  const itemIndex = isInCollecList
-    ? userData.colleclist?.findIndex((element) => element.mal_id == data.mal_id)
-    : null;
-  const dataBookCommentary = (condition) => {
-    if (isLogged && condition === "commentary") {
-      return isInCollecList && userData.colleclist[itemIndex].commentary
-        ? userData.colleclist[itemIndex].commentary
-        : infos.commentary;
-    } else if (isLogged && condition === "bookmark") {
-      return isInCollecList && userData.colleclist[itemIndex].bookMarkValue
-        ? userData.colleclist[itemIndex].bookMarkValue
-        : infos.bookmark;
-    } else {
-      return "";
-    }
-  };
-  const commentary = dataBookCommentary("commentary");
-  const bookmark = dataBookCommentary("bookmark");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading2, setIsLoading2] = useState(false);
+  const dispatch = useDispatch();
 
   async function AddColleclist() {
     try {
+      setIsLoading(true);
       if (isInCollecList) {
         return console.log("Déjà dans la liste");
       } else {
@@ -64,57 +79,57 @@ export default function CardScreen({ route, navigation }) {
           method: "patch",
           url: `https://server-yondemangacollec.onrender.com/api/user/colleclistleveladdpatch/${userId}`,
         });
-        dispatch(getUserData(userId));
+        await dispatch(getUserData(userId));
         console.log("Element ajouté à la liste");
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function RemoveColleclist() {
     try {
+      setIsLoading(true);
       if (isInCollecList) {
         const response = await axios({
           method: "delete",
-          url: `https://server-yondemangacollec.onrender.com/api/user/colleclistdelete/${userId}/${data.mal_id}`,
+          url: `https://server-yondemangacollec.onrender.com/api/user/colleclistdelete/${userId}/${
+            data && data.mal_id
+          }`,
         });
         const responselevel = await axios({
           method: "patch",
           url: `https://server-yondemangacollec.onrender.com/api/user/colleclistlevelremovepatch/${userId}`,
         });
-        dispatch(getUserData(userId));
+        await dispatch(getUserData(userId));
         console.log("élement supprimé");
       } else {
         return console.log("Déjà dans la liste");
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function BookMarkPatch() {
     try {
+      setIsLoading2(true);
       const response = await axios({
         method: "patch",
         url: `https://server-yondemangacollec.onrender.com/api/user/colleclistbookmarkpatch/${userId}/${data.mal_id}`,
         data: { bookMarkValue: infos.bookmark },
       });
-      dispatch(getUserData(userId));
       setInfos((prev) => {
         return {
           ...prev,
           msgBookMark: response.data.message,
         };
       });
-      setTimeout(() => {
-        setInfos((prev) => {
-          return {
-            ...prev,
-            msgBookMark: "",
-          };
-        });
-      }, 2000);
+      await dispatch(getUserData(userId));
     } catch (err) {
       setInfos((prev) => {
         return {
@@ -122,38 +137,27 @@ export default function CardScreen({ route, navigation }) {
           msgBookMark: "Une erreur est survenue...",
         };
       });
-      setTimeout(() => {
-        setInfos((prev) => {
-          return {
-            ...prev,
-            msgBookMark: "",
-          };
-        });
-      }, 2000);
+    } finally {
+      setIsLoading2(false);
     }
   }
   async function CommentaryPatch() {
     try {
+      setIsLoading2(true);
       const response = await axios({
         method: "patch",
-        url: `https://server-yondemangacollec.onrender.com/api/user/colleclistcommentarypatch/${userId}/${data.mal_id}`,
+        url: `https://server-yondemangacollec.onrender.com/api/user/colleclistcommentarypatch/${userId}/${
+          data && data?.mal_id
+        }`,
         data: { commentary: infos.commentary },
       });
-      dispatch(getUserData(userId));
       setInfos((prev) => {
         return {
           ...prev,
           msgCommentary: response.data.message,
         };
       });
-      setTimeout(() => {
-        setInfos((prev) => {
-          return {
-            ...prev,
-            msgCommentary: "",
-          };
-        });
-      }, 2000);
+      await dispatch(getUserData(userId));
     } catch (err) {
       setInfos((prev) => {
         return {
@@ -161,14 +165,8 @@ export default function CardScreen({ route, navigation }) {
           msgCommentary: "Une erreur est survenue...",
         };
       });
-      setTimeout(() => {
-        setInfos((prev) => {
-          return {
-            ...prev,
-            msgCommentary: "",
-          };
-        });
-      }, 2000);
+    } finally {
+      setIsLoading2(false);
     }
   }
 
@@ -177,33 +175,35 @@ export default function CardScreen({ route, navigation }) {
       <ScrollView nestedScrollEnabled={true}>
         <View style={s.sousContainer}>
           <CardScreenHeader
-            img={data.images.jpg.image_url}
-            bigImg={data.images.jpg.large_image_url}
+            img={data && data?.images?.jpg?.image_url}
+            bigImg={data && data?.images?.jpg?.large_image_url}
             navigation={navigation}
           />
-          <Txt styles={s.title}>{data.title}</Txt>
-          <Txt styles={s.title2}>{data.title_english}</Txt>
+          <Txt styles={s.title}>{data && data?.title}</Txt>
+          <Txt styles={s.title2}>{data && data?.title_english}</Txt>
           <View style={s.tagsContainer}>
-            {data.genres &&
-              data.genres.map((element) => {
+            {data &&
+              data?.genres &&
+              data &&
+              data?.genres.map((element) => {
                 return <Tag key={element.mal_id}>{element.name}</Tag>;
               })}
             <Tag
               v={
-                data.type === "TV"
+                data && data?.type === "TV"
                   ? { backgroundColor: color1 }
                   : { backgroundColor: colorManga }
               }
               t={{ color: color5 }}
             >
-              {data.type}
+              {data && data?.type}
             </Tag>
           </View>
           <Stars data={data} />
 
           <View style={s.synopsis}>
             <ScrollView nestedScrollEnabled={true}>
-              <Txt>{data.synopsis}</Txt>
+              <Txt>{data && data?.synopsis}</Txt>
             </ScrollView>
           </View>
           {!isLogged && (
@@ -221,75 +221,154 @@ export default function CardScreen({ route, navigation }) {
               <ButtonComp
                 onPress={isInCollecList ? RemoveColleclist : AddColleclist}
                 styl={{ alignSelf: "flex-start" }}
+                isLoading={isLoading}
               >
-                {isInCollecList
-                  ? "Supprimer de la collection"
-                  : "Ajouter à la collection"}
+                {isInCollecList && "Supprimer de votre collection"}
+                {!isInCollecList && "Ajouter à votre collection"}
               </ButtonComp>
-              {isInCollecList && (
+
+              {(isInCollecList || isFriendPage) && (
                 <>
-                  <View style={s.elementcontainer}>
-                    <Txt>Marque-page :</Txt>
-                    <TextInput
-                      placeholder="N° épisode ou scan..."
-                      keyboardType="numeric"
-                      inputMode="numeric"
-                      style={s.element}
-                      onSubmitEditing={BookMarkPatch}
-                      value={bookmark}
-                      onChangeText={(e) =>
-                        setInfos((prev) => {
-                          return {
-                            ...prev,
-                            bookmark: e,
-                          };
-                        })
-                      }
+                  {!isFriendPage && (
+                    <>
+                      <View style={s.elementcontainer}>
+                        <Txt>Marque-page :</Txt>
+                        <TextInput
+                          placeholder="N° épisode ou scan..."
+                          keyboardType="numeric"
+                          inputMode="numeric"
+                          style={s.element}
+                          value={infos.bookmark}
+                          onChangeText={(e) =>
+                            setInfos((prev) => {
+                              return {
+                                ...prev,
+                                bookmark: e,
+                              };
+                            })
+                          }
+                        />
+
+                        <TouchableOpacity
+                          onPress={BookMarkPatch}
+                          style={s.submitbutton}
+                          disabled={isLoading2}
+                        >
+                          <Ionicons
+                            name="checkmark"
+                            size={24}
+                            color={"green"}
+                          />
+                        </TouchableOpacity>
+                        {isLoading2 && (
+                          <ActivityIndicator
+                            size={"large"}
+                            style={{
+                              position: "absolute",
+                              right: "45%",
+                              bottom: "45%",
+                            }}
+                          />
+                        )}
+                        <Txt
+                          styles={{
+                            color: "green",
+                            textAlign: "center",
+                            width: "80%",
+                          }}
+                        >
+                          {infos.msgBookMark}
+                        </Txt>
+                      </View>
+                      <View style={s.elementcontainer}>
+                        <Txt>Commentaire sur l'oeuvre</Txt>
+                        <TextInput
+                          style={[
+                            s.element,
+                            {
+                              minHeight: 80,
+                              textAlignVertical: "top",
+                              lineHeight: 30,
+                            },
+                          ]}
+                          placeholder="Donnez votre avis ou écrivez des notes."
+                          multiline={true}
+                          value={infos.commentary}
+                          onChangeText={(e) =>
+                            setInfos((prev) => {
+                              return {
+                                ...prev,
+                                commentary: e,
+                              };
+                            })
+                          }
+                        />
+                        <TouchableOpacity
+                          onPress={CommentaryPatch}
+                          style={s.submitbutton}
+                          disabled={isLoading2}
+                        >
+                          <Ionicons
+                            name="checkmark"
+                            size={24}
+                            color={"green"}
+                          />
+                        </TouchableOpacity>
+                        <Txt
+                          styles={{
+                            color: "green",
+                            textAlign: "center",
+                            width: "80%",
+                          }}
+                        >
+                          {infos.msgCommentary}
+                        </Txt>
+                      </View>
+                    </>
+                  )}
+                  {isFriendPage && (
+                    <>
+                      <View style={s.elementcontainer}>
+                        <View style={s.element}>
+                          <Txt>Marque-page : </Txt>
+                          <Txt>{infos.bookmark}</Txt>
+                        </View>
+                      </View>
+                      <View style={s.elementcontainer}>
+                        <View
+                          style={[
+                            s.element,
+                            {
+                              minHeight: 80,
+                              textAlignVertical: "top",
+                              lineHeight: 30,
+                            },
+                          ]}
+                        >
+                          <Txt>Commentaire sur l'oeuvre : </Txt>
+                          <Txt>{infos.commentary}</Txt>
+                        </View>
+                      </View>
+                    </>
+                  )}
+                  {!isFriendPage && (
+                    <Stars
+                      data={data}
+                      isLogged={isLogged}
+                      userId={userId}
+                      userData={userData}
+                      itemIndex={itemIndex}
                     />
-                    <Txt styles={{ color: "green", textAlign: "center" }}>
-                      {infos.msgBookMark}
-                    </Txt>
-                  </View>
-                  <View style={s.elementcontainer}>
-                    <Txt>Commentaire sur l'oeuvre</Txt>
-                    <TextInput
-                      style={[
-                        s.element,
-                        {
-                          minHeight: 80,
-                          textAlignVertical: "top",
-                          lineHeight: 30,
-                        },
-                      ]}
-                      placeholder="Donnez votre avis ou écrivez des notes."
-                      multiline={true}
-                      value={commentary}
-                      onChangeText={(e) =>
-                        setInfos((prev) => {
-                          return {
-                            ...prev,
-                            commentary: e,
-                          };
-                        })
-                      }
+                  )}
+                  {isFriendPage && (
+                    <Stars
+                      data={data}
+                      isLogged={isLogged}
+                      userId={userId}
+                      userData={friendData}
+                      itemIndex={itemIndexFriend}
                     />
-                    <TouchableOpacity
-                      onPress={CommentaryPatch}
-                      style={s.submitbutton}
-                    >
-                      <Ionicons name="checkmark" size={24} color={"green"} />
-                    </TouchableOpacity>
-                    <Txt styles={{ color: "green", textAlign: "center" }}>
-                      {infos.msgCommentary}
-                    </Txt>
-                  </View>
-                  <Stars
-                    data={data}
-                    isLogged={isLogged}
-                    userId={userId}
-                    userData={userData}
-                    isInCollecList={isInCollecList}
-                  />
+                  )}
                 </>
               )}
             </View>

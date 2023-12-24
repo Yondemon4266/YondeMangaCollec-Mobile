@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, View } from "react-native";
-import { s } from "./CatalogueStyle";
 import CatalogueHeader from "../components/CatalogueHeader/CatalogueHeader";
-import CatalogueSpecialCard from "../components/CatalogueSpecialCard/CatalogueSpecialCard";
+import { useSelector } from "react-redux";
+import CatalogueContent from "../components/CatalogueHeader/CatalogueContent";
+
 export default function Catalogue({ navigation }) {
-  const [data, setData] = useState([]);
+  const userData = useSelector((state) => state.User.userData);
+  const allUsersData = useSelector((state) => state.AllUsers.AllUsersData);
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <ScrollView>
-        <CatalogueHeader />
+        <CatalogueHeader
+          allUsersData={allUsersData}
+          userData={userData}
+          navigation={navigation}
+        />
         {/* <CatalogueSpecialCard /> */}
+        <CatalogueContent userData={userData} navigation={navigation} />
       </ScrollView>
     </View>
   );

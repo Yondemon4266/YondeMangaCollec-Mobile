@@ -4,7 +4,6 @@ import Preparation from "./Hooks/PrepareHook";
 import { NavigationContainer } from "@react-navigation/native";
 import Navigation from "./components/Navbar/Navigation";
 import { View } from "react-native";
-
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {

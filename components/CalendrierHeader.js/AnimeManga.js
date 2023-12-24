@@ -3,13 +3,22 @@ import { View } from "react-native";
 import { s } from "./CalendrierHeaderStyle";
 import { color1, color2, color4, color5 } from "../../utils/Colors";
 import ButtonComp from "../Button/ButtonComp";
-export default function AnimeManga({ dispatch, isAnime }) {
+export default function AnimeManga({
+  dispatch,
+  isAnime,
+  setIsAnime,
+  isCalender,
+}) {
   return (
     <View>
       <View style={s.animemanga}>
         <ButtonComp
           onPress={() => {
-            dispatch({ type: "SET_IS_ANIME", payload: !isAnime });
+            if (isCalender) {
+              setIsAnime(!isAnime);
+            } else {
+              dispatch({ type: "SET_IS_ANIME", payload: !isAnime });
+            }
           }}
           styl={[
             s.button,
@@ -21,7 +30,13 @@ export default function AnimeManga({ dispatch, isAnime }) {
           Animés
         </ButtonComp>
         <ButtonComp
-          onPress={() => dispatch({ type: "SET_IS_ANIME", payload: !isAnime })}
+          onPress={() => {
+            if (isCalender) {
+              setIsAnime(!isAnime);
+            } else {
+              dispatch({ type: "SET_IS_ANIME", payload: !isAnime });
+            }
+          }}
           styl={[
             s.button,
             !isAnime

@@ -56,6 +56,6 @@ export const s = StyleSheet.create({
     padding: 3,
     position: "absolute",
     right: -10,
-    bottom: 25,
+    bottom: 35,
   },
 });

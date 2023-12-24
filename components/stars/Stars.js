@@ -9,24 +9,15 @@ import { useDispatch } from "react-redux";
 import { getUserData } from "../../Redux/UserSlice";
 import axios from "axios";
 
-export default function Stars({
-  data,
-  isLogged,
-  userId,
-  userData,
-  isInCollecList,
-}) {
+export default function Stars({ data, isLogged, userId, userData, itemIndex }) {
   const [userScore, setUserScore] = useState(0);
   const [msg, setMsg] = useState("");
   const dispatch = useDispatch();
 
-  const itemIndex = isInCollecList
-    ? userData.colleclist?.findIndex((element) => element.mal_id == data.mal_id)
-    : null;
   const RatingFunction = () => {
     if (isLogged) {
-      return isInCollecList && userData.colleclist[itemIndex].popularityValue
-        ? userData.colleclist[itemIndex].popularityValue
+      return userData && userData.colleclist[itemIndex]?.popularityValue
+        ? userData.colleclist[itemIndex]?.popularityValue
         : userScore;
     } else {
       return data.score ? data.score.toFixed(1) / 2 : 0;
@@ -43,7 +34,7 @@ export default function Stars({
           url: `https://server-yondemangacollec.onrender.com/api/user/colleclistpopularitypatch/${userId}/${data.mal_id}`,
           data: { popularityValue: rate },
         });
-        dispatch(getUserData(userId));
+        await dispatch(getUserData(userId));
         setMsg(response.data.message);
         setTimeout(() => {
           setMsg("");

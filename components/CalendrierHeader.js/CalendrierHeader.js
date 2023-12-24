@@ -7,6 +7,7 @@ import ButtonComp from "../Button/ButtonComp";
 import AnimeManga from "./AnimeManga";
 
 export default function CalendrierHeader({ isAnime, setIsAnime }) {
+  const isCalender = true;
   return (
     <>
       <View style={s.header}>
@@ -17,7 +18,11 @@ export default function CalendrierHeader({ isAnime, setIsAnime }) {
           </ButtonComp>
         </View>
       </View>
-      <AnimeManga isAnime={isAnime} setIsAnime={setIsAnime} />
+      <AnimeManga
+        isAnime={isAnime}
+        setIsAnime={setIsAnime}
+        isCalender={isCalender}
+      />
     </>
   );
 }

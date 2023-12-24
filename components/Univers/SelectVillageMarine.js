@@ -4,13 +4,18 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import { s } from "./UniversStyle";
 import Txt from "../Text/Txt";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserData } from "../../Redux/UserSlice";
+import {
+  authReducer,
+  changeOptionsFinished,
+  getUserData,
+} from "../../Redux/UserSlice";
 import { islands, villages } from "../../utils/UniverseUtils";
 import { color3, color5, colorManga } from "../../utils/Colors";
 
@@ -22,6 +27,7 @@ export default function SelectVillageMarine({ navigation }) {
   async function selectVillage(village) {
     const data = {};
     try {
+      setLoading(true);
       if (userData.universe === "naruto") {
         data.village = village;
       } else {
@@ -32,14 +38,17 @@ export default function SelectVillageMarine({ navigation }) {
         url: `https://server-yondemangacollec.onrender.com/api/user/selectvillageisland/${userId}`,
         data: data,
       });
-      dispatch(getUserData(userId));
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        navigation.navigate("AccueilStack");
-      }, 1000);
+      await dispatch(getUserData(userId));
     } catch (err) {
       console.log(err.response.data.message);
+    } finally {
+      setLoading(false);
+      if (userData.universe === "onepiece") {
+        navigation.navigate("SelectMarineOrPirate");
+      } else if (userData.universe === "naruto") {
+        dispatch(changeOptionsFinished(true));
+        navigation.navigate("AccueilStack");
+      }
     }
   }
   return (
@@ -48,42 +57,36 @@ export default function SelectVillageMarine({ navigation }) {
         styles={{
           fontFamily: "Literata-SemiBold",
           fontSize: 20,
-          marginBottom: 40,
         }}
       >
         {userData.universe === "naruto"
           ? "Choisissez votre village"
           : "Choisissez votre île"}
       </Txt>
-      <View
-        style={{
-          flexDirection: "row",
-          gap: 10,
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingHorizontal: 20,
-        }}
-      >
+      <ScrollView contentContainerStyle={s.scrollview}>
         {userData.universe === "naruto" &&
-          villages.map((element) => (
+          villages.map((element, index) => (
             <TouchableOpacity
-              onPress={() => selectVillage(element)}
-              style={[s.button, { backgroundColor: color3 }]}
+              onPress={() => selectVillage(element.village)}
+              key={index}
+              style={{ gap: 5 }}
             >
-              <Txt styles={{ fontSize: 16, color: color5 }}>{element}</Txt>
+              <Image source={{ uri: element.img }} style={s.img} />
+              <Txt styles={s.text}>{element.village}</Txt>
             </TouchableOpacity>
           ))}
         {userData.universe === "onepiece" &&
-          islands.map((element) => (
+          islands.map((element, index) => (
             <TouchableOpacity
-              onPress={() => selectVillage(element)}
-              style={[s.button, { backgroundColor: colorManga }]}
+              onPress={() => selectVillage(element.island)}
+              key={index}
+              style={{ gap: 5 }}
             >
-              <Txt styles={{ fontSize: 16, color: color5 }}>{element}</Txt>
+              <Image source={{ uri: element.img }} style={s.img} />
+              <Txt styles={s.text}>{element.island}</Txt>
             </TouchableOpacity>
           ))}
-      </View>
+      </ScrollView>
       {loading && (
         <>
           <ActivityIndicator size={"large"} />

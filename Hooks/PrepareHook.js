@@ -10,8 +10,8 @@ import { getAllUsers } from "../Redux/AllUsersSlice";
 
 export default function Preparation() {
   const isLogged = useSelector((state) => state.User.isLogged);
+  const userId = useSelector((state) => state.User.userId);
   const [appIsReady, setAppIsReady] = useState(false);
-  const [userId, setUserId] = useState("p");
   const dispatch = useDispatch();
   useEffect(() => {
     async function prepare() {
@@ -30,7 +30,6 @@ export default function Preparation() {
           dispatch(authReducer(true));
           dispatch(getUserId(loginResponse.data));
           console.log("authentifié!");
-          setUserId(loginResponse.data);
         }
       } catch (e) {
         dispatch(authReducer(false));
@@ -38,7 +37,7 @@ export default function Preparation() {
           "authUser",
           e.response?.data?.message || "auth une erreur s'est produite"
         );
-        setUserId("p");
+        dispatch(getUserId("p"));
       }
     }
 
@@ -81,6 +80,7 @@ export default function Preparation() {
     async function prepareData() {
       try {
         await prepare();
+
         if (isLogged && userId !== "p") {
           await Promise.all([prepare3(), prepare2()]);
         } else {

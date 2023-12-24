@@ -19,29 +19,65 @@ export default function Calendrier({ navigation }) {
   const month = date.split("/")[0];
   const [isAnime, setIsAnime] = useState(true);
   const [season, setSeason] = useState(GetSeasonNow(month));
+  const [pageAnime, setPageAnime] = useState(1);
+  const [pageManga, setPageManga] = useState(1);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [loadingScroll, setLoadingScroll] = useState(false);
 
   useEffect(() => {
     if (isAnime) {
-      setLoading(true);
+      if (isScrolled) {
+        setLoadingScroll(true);
+      } else {
+        setLoading(true);
+      }
       get(
-        `https://api.jikan.moe/v4/seasons/${year}/${season}?sfw&filter=tv&movie&page=1`
+        `https://api.jikan.moe/v4/seasons/${year}/${season}?sfw&filter=tv&movie&page=${pageAnime}`
       )
-        .then((response) => setDataList(response.data.data))
+        .then((response) => {
+          if (isScrolled) {
+            setDataList((prev) => [...prev, ...response.data.data]);
+          } else {
+            setDataList(response.data.data);
+          }
+        })
         .catch((error) => console.log("ListCalender", error))
-        .finally(() => setLoading(false));
+        .finally(() => {
+          setLoading(false);
+          setIsScrolled(false);
+          setLoadingScroll(false);
+        });
     } else if (!isAnime) {
-      setLoading(true);
+      if (isScrolled) {
+        setLoadingScroll(true);
+      } else {
+        setLoading(true);
+      }
       get(
-        `https://api.jikan.moe/v4/manga?q=&sfw&status=publishing&order_by=popularity&page=1`
+        `https://api.jikan.moe/v4/manga?q=&sfw&status=publishing&order_by=popularity&page=${pageManga}&genres_exclude=12,9,49,15`
       )
-        .then((response) => setDataList(response.data.data))
+        .then((response) => {
+          if (isScrolled) {
+            setDataList((prev) => [...prev, ...response.data.data]);
+          } else {
+            setDataList(response.data.data);
+          }
+        })
         .catch((error) => console.log("ListCalender", error))
-        .finally(() => setLoading(false));
+        .finally(() => {
+          setLoading(false);
+          setIsScrolled(false);
+          setLoadingScroll(false);
+        });
     }
-    return () => {
-      setDataList([]);
-    };
-  }, [year, season, isAnime]);
+  }, [year, season, isAnime, pageAnime, pageManga]);
+
+  function pageAnimeInc() {
+    setPageAnime((prev) => prev + 1);
+  }
+  function pageMangaInc() {
+    setPageManga((prev) => prev + 1);
+  }
 
   return (
     <SafeAreaProvider>
@@ -57,6 +93,10 @@ export default function Calendrier({ navigation }) {
           loading={loading}
           dataList={dataList}
           isAnime={isAnime}
+          pageAnimeInc={pageAnimeInc}
+          pageMangaInc={pageMangaInc}
+          setIsScrolled={setIsScrolled}
+          loadingScroll={loadingScroll}
         />
       </SafeAreaView>
     </SafeAreaProvider>

@@ -5,10 +5,12 @@ import { useForm } from "react-hook-form";
 import ButtonComp from "../../components/Button/ButtonComp";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { authReducer } from "../../Redux/UserSlice";
 export default function Connexion({ navigation }) {
   const dispatch = useDispatch();
+  const userId = useSelector((state) => state.User.userId);
+  const userData = useSelector((state) => state.User.userData);
   const {
     control,
     handleSubmit,
@@ -28,7 +30,8 @@ export default function Connexion({ navigation }) {
       });
       if (response) {
         console.log("login réussi");
-        navigation.navigate("ConnexionReussi");
+        dispatch(authReducer(true));
+        navigation.navigate("ConnexionReussi", { connexion: true });
       } else {
         dispatch(authReducer(false));
       }

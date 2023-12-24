@@ -9,16 +9,7 @@ function searchReducer(state, action) {
       return { ...state, search: action.payload };
     case "SET_FILTER_OPTIONS":
       return { ...state, filterOptions: action.payload };
-    case "SET_PAGE_ANIME":
-      return { ...state, pageAnime: action.payload };
-    case "SET_PAGE_MANGA":
-      return { ...state, pageManga: action.payload };
-    case "SET_IS_SEARCH_SUBMIT":
-      return { ...state, isSearchSubmit: action.payload };
-    case "SET_LOADING":
-      return { ...state, loading: action.payload };
-    case "SET_DISPLAYED_DATA":
-      return { ...state, displayedData: action.payload };
+
     default:
       return state;
   }
@@ -40,14 +31,8 @@ const initialState = {
     search: "",
     loading: false,
   },
-  pageAnime: 1,
-  pageManga: 1,
-  isSearchSubmit: false,
-  displayedData: {
-    animes: [],
-    mangas: [],
-  },
   loading: false,
+  loadingScroll: false,
 };
 
 const SearchContext = createContext();

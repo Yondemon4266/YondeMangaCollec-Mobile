@@ -7,9 +7,9 @@ export default function CardList({
   isAnime,
   displayedData,
   dispatch,
-  pageAnime,
-  pageManga,
-  loading,
+  setPageAnime,
+  setPageManga,
+  setLoadingScroll,
   navigation,
 }) {
   return (
@@ -36,18 +36,16 @@ export default function CardList({
       }}
       numColumns={2}
       horizontal={false}
-      refreshing={loading}
-      onEndReached={() =>
-        isAnime
-          ? dispatch({
-              type: "SET_PAGE_ANIME",
-              payload: pageAnime + 1,
-            })
-          : dispatch({
-              type: "SET_PAGE_MANGA",
-              payload: pageManga + 1,
-            })
-      }
+      onEndReached={() => {
+        setLoadingScroll((prev) => {
+          return !prev;
+        });
+        if (isAnime) {
+          setPageAnime((prev) => prev + 1);
+        } else {
+          setPageManga((prev) => prev + 1);
+        }
+      }}
     />
   );
 }

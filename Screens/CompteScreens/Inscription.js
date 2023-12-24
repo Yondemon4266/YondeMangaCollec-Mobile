@@ -7,11 +7,13 @@ import ButtonComp from "../../components/Button/ButtonComp";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { color1 } from "../../utils/Colors";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { authReducer } from "../../Redux/UserSlice";
 
 export default function Inscription({ navigation }) {
   const dispatch = useDispatch();
+  const userId = useSelector((state) => state.User.userId);
+  const userData = useSelector((state) => state.User.userData);
   const {
     control,
     handleSubmit,
@@ -68,7 +70,8 @@ export default function Inscription({ navigation }) {
           });
           console.log("login response: ", loginResponse.data.message);
           if (loginResponse) {
-            navigation.navigate("ConnexionReussi");
+            dispatch(authReducer(true));
+            navigation.navigate("ConnexionReussi", { connexion: false });
           } else {
             dispatch(authReducer(false));
           }
@@ -94,8 +97,8 @@ export default function Inscription({ navigation }) {
               message: "Votre pseudo doit contenir au moins 3 caractères",
             },
             maxLength: {
-              value: 20,
-              message: "Votre pseudo ne peut excéder 20 caractères",
+              value: 30,
+              message: "Votre pseudo ne peut excéder 30 caractères",
             },
             required: "Champ requis",
           }}
@@ -106,8 +109,8 @@ export default function Inscription({ navigation }) {
           placeholder="Email"
           rules={{
             maxLength: {
-              value: 20,
-              message: "Votre email ne peut excéder 20 caractères",
+              value: 40,
+              message: "Votre email ne peut excéder 40 caractères",
             },
             pattern: {
               value: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,

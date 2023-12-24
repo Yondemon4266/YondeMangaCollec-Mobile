@@ -277,7 +277,6 @@ export default function ModalComp({
                 position: "absolute",
                 left: "50%",
                 bottom: 0,
-                transform: [{ translateX: -20 }],
               }}
             />
           )}

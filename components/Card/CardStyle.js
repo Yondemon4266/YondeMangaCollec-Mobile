@@ -1,5 +1,6 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 
+const halfWidth = Dimensions.get("window").width / 2 - 20;
 export const s = StyleSheet.create({
   cardcontainer: {
     flexDirection: "column",
@@ -7,7 +8,7 @@ export const s = StyleSheet.create({
     margin: 3,
   },
   img: {
-    width: 170,
+    width: halfWidth,
     height: 200,
   },
 });

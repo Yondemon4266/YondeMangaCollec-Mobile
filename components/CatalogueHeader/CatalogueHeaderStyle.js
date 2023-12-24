@@ -1,10 +1,10 @@
 import { Dimensions, StyleSheet } from "react-native";
-import { color2, color4 } from "../../utils/Colors";
+import { color1, color2, color3, color4, color5 } from "../../utils/Colors";
 
 const imgSize = 130;
 const halfImgSize = imgSize / 2;
-const decalageImg = halfImgSize - 15;
-const halfWidth = Dimensions.get("window").width / 2;
+const fullWidth = Dimensions.get("window").width;
+const halfWidth = fullWidth / 2;
 const padH = 10;
 
 export const s = StyleSheet.create({
@@ -20,16 +20,26 @@ export const s = StyleSheet.create({
     width: "100%",
     height: 220,
   },
-  img: {
+  buttonimg: {
     position: "absolute",
-    bottom: -decalageImg,
+    top: 130,
     left: Dimensions.get("window").width / 2 - halfImgSize,
+  },
+  img: {
     width: imgSize,
     height: imgSize,
     borderRadius: 600,
   },
+  imgcatalogue: {
+    width: imgSize,
+    height: imgSize,
+    borderRadius: 600,
+    position: "absolute",
+    top: 130,
+    left: Dimensions.get("window").width / 2 - halfImgSize,
+  },
   infos: {
-    marginTop: decalageImg,
+    marginTop: 30,
     gap: 5,
   },
   title: {
@@ -65,11 +75,68 @@ export const s = StyleSheet.create({
     flexDirection: "row",
     marginHorizontal: padH,
     justifyContent: "space-between",
+    position: "relative",
   },
   search: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
+  },
+  searchlist: {
+    position: "absolute",
+    bottom: 50,
+    left: 35,
+    maxHeight: 130,
+    width: fullWidth - 80,
+    backgroundColor: color5,
+    zIndex: 50,
+    borderRadius: 5,
+  },
+  searchelement: {
+    borderTopWidth: 3,
+    borderTopColor: color3,
+    padding: 5,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    flexDirection: "row",
+    width: "100%",
+    height: 60,
+    gap: 5,
+  },
+  littleimg: {
+    height: 50,
+    width: "30%",
+    alignSelf: "center",
+  },
+  searchelementright: {
+    flexDirection: "column",
+    justifyContent: "space-between",
+    width: "70%",
+    paddingRight: 5,
+  },
+  elementinright: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  textelement1: {
+    fontSize: 11,
+    fontFamily: "Literata-SemiBold",
+  },
+  textelement2: {
+    fontSize: 10,
+  },
+  shadowAndroid: {
+    elevation: 10,
+  },
+  shadowIOS: {
+    shadowColor: "#333333",
+    shadowOffset: {
+      width: 6,
+      height: 6,
+    },
+    shadowOpacity: 0.7,
+    shadowRadius: 4,
   },
   searchbarfilters: {
     backgroundColor: color2,

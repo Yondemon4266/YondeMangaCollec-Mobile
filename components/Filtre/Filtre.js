@@ -10,7 +10,12 @@ import OptionsSelected from "./OptionsSelected";
 import Options from "./Options";
 
 
-export const Filtre = ({ isAnime, filterOptions, dispatch, searchData }) => {
+export const Filtre = ({
+  isAnime,
+  filterOptions,
+  dispatch,
+  setIsSearchSubmit,
+}) => {
   const iconSize = 20;
 
   function ChangeFilterOptions(selectedOption) {
@@ -195,7 +200,13 @@ export const Filtre = ({ isAnime, filterOptions, dispatch, searchData }) => {
             AddOption={AddOption}
             dispatch={dispatch}
           />
-          <ButtonComp onPress={() => searchData()}>
+          <ButtonComp
+            onPress={() => {
+              setIsSearchSubmit((prev) => {
+                return !prev;
+              });
+            }}
+          >
             Valider la recherche
           </ButtonComp>
         </>

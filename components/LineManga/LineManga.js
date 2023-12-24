@@ -13,11 +13,12 @@ export default function LineManga({ data, navigation }) {
     : data.published?.from
     ? data.published.from
     : "";
+    
 
   return (
     <TouchableOpacity
       style={s.container}
-      onPress={() => navigation.navigate("CardScreen", { data })}
+      onPress={() => navigation.navigate("CardScreen", { data: data })}
     >
       <View style={s.left}>
         <Txt styles={s.text}>
@@ -47,10 +48,7 @@ export default function LineManga({ data, navigation }) {
       </View>
       <View style={s.right}>
         {data.broadcast ? (
-          <Txt styles={s.textimage}>
-            {ConvertDay(data.broadcast.day) + " "}
-            {data.broadcast.time}
-          </Txt>
+          <Txt styles={s.textimage}>{ConvertDay(data.broadcast.day)}</Txt>
         ) : null}
         <Image source={{ uri: data.images.jpg.image_url }} style={s.img} />
       </View>

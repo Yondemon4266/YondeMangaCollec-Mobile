@@ -4,6 +4,7 @@ import Catalogue from "../../pages/Catalogue";
 import NonID from "../../components/NonID/NonID";
 import { useSelector } from "react-redux";
 import CardScreen from "../../Screens/CardScreens/CardScreen";
+import CatalogueFriend from "../../Screens/CatalogueScreens/CatalogueFriend";
 
 const LibraryStack = createNativeStackNavigator();
 
@@ -12,12 +13,17 @@ export default function CatalogueStack() {
   return (
     <LibraryStack.Navigator
       initialRouteName={isLogged ? "Catalogue" : "Connexion"}
+      screenOptions={{ headerShown: false }}
     >
       {!isLogged && <LibraryStack.Screen name="Connexion" component={NonID} />}
       {isLogged && (
         <>
           <LibraryStack.Screen name="Catalogue" component={Catalogue} />
           <LibraryStack.Screen name="CardScreen" component={CardScreen} />
+          <LibraryStack.Screen
+            name="CatalogueFriend"
+            component={CatalogueFriend}
+          />
         </>
       )}
     </LibraryStack.Navigator>

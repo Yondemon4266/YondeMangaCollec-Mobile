@@ -21,3 +21,16 @@ export function translateSeason(season) {
     return "winter";
   }
 }
+
+
+export function convertSeason(season) {
+  if (season === "spring") {
+    return "Printemps";
+  } else if (season === "summer") {
+    return "Été";
+  } else if (season === "fall") {
+    return "Automne";
+  } else if (season === "winter") {
+    return "Hiver";
+  }
+}
