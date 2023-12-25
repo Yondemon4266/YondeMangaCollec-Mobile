@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Pressable,
   Linking,
+  ScrollView,
 } from "react-native";
 import React, { useState } from "react";
 import axios from "axios";
@@ -25,6 +26,8 @@ import ButtonComp from "../components/Button/ButtonComp";
 import ConvertDateFormat from "../utils/ConvertDateFormat";
 import ModalComp from "./ModalComp";
 import { ActivityIndicator } from "react-native";
+import { color1, color3, color5 } from "../utils/Colors";
+import { Ionicons } from "@expo/vector-icons";
 export default function CompteID() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.User.userId);
@@ -40,15 +43,19 @@ export default function CompteID() {
     pseudoVisible: false,
     passwordVisible: false,
     modalVisible: false,
+    modal2Visible: false,
+    confirmDeletion: "",
     errors: {
       email: "",
       password: "",
       pseudo: "",
+      delAccount: "",
     },
     success: {
       email: "",
       password: "",
       pseudo: "",
+      delAccount: "",
     },
     loading: false,
   });
@@ -379,127 +386,223 @@ export default function CompteID() {
     }
   }
 
-  return (
-    <View style={{ flex: 1, gap: 15 }}>
-      <Pressable onPress={() => pickImageAsync("bg")}>
-        <ImageBackground
-          source={
-            userData && userData?.bgimg
-              ? {
-                  uri: `https://server-yondemangacollec.onrender.com/images/${userData.bgimg}`,
-                }
-              : bg
-          }
-          resizeMode="cover"
-          style={s.bg}
-        />
-      </Pressable>
-      {isLoading && <ActivityIndicator size={"large"} style={{ zIndex: 10 }} />}
-      <Pressable style={s.buttonimg} onPress={() => pickImageAsync("img")}>
-        <Image
-          source={
-            userData && userData?.bgimg
-              ? {
-                  uri: `https://server-yondemangacollec.onrender.com/images/${userData.img}`,
-                }
-              : img
-          }
-          style={s.img}
-        />
-      </Pressable>
+  async function deleteAccount() {
+    if (infos.confirmDeletion === "SUPPRIMER") {
+      try {
+        const response = await axios({
+          method: "delete",
+          url: `https://server-yondemangacollec.onrender.com/api/user/delete/${userId}`,
+        });
+        setInfos((prev) => {
+          return {
+            ...prev,
+            errors: {
+              ...prev.errors,
+              pseudo: "",
+              password: "",
+              email: "",
+              delAccount: "",
+            },
+            success: {
+              ...prev.success,
+              pseudo: "",
+              password: "",
+              email: "",
+              delAccount: "Compte supprimé avec succès !",
+            },
+          };
+        });
+      
+      } catch (error) {
+        console.log("erreur lors de la suppression du compte", error);
+      } finally {
+        setTimeout(() => {
+          console.log("ok");
+          Cookies.remove("jwt");
+          dispatch(authReducer(false));
+          dispatch(changeOptionsFinished(false));
+          dispatch(getUserId("p"));
+        }, 2000);
+      }
+    } else {
+      setInfos((prev) => {
+        return {
+          ...prev,
+          errors: {
+            ...prev.errors,
+            pseudo: "",
+            password: "",
+            email: "",
+            delAccount: "Écrivez 'SUPPRIMER' en majuscule",
+          },
+          success: {
+            ...prev.success,
+            pseudo: "",
+            password: "",
+            email: "",
+            delAccount: "",
+          },
+        };
+      });
+    }
+  }
 
-      <View style={s.infos}>
-        <Txt styles={s.title}>{userData && userData.pseudo}</Txt>
-        <Txt styles={s.level}>
-          Niveau {Math.floor(userData && userData.level)}{" "}
-        </Txt>
-      </View>
-      <View style={{ paddingHorizontal: 20 }}>
-        <View style={s.lines}>
-          <Txt styles={[s.texttitle, { fontFamily: "Literata-SemiBold" }]}>
-            Gestion du compte
+  return (
+    <View style={{ flex: 1, marginBottom: 20 }}>
+      <ScrollView contentContainerStyle={{ gap: 15 }}>
+        <Pressable onPress={() => pickImageAsync("bg")}>
+          <ImageBackground
+            source={
+              userData && userData?.bgimg
+                ? {
+                    uri: `https://server-yondemangacollec.onrender.com/images/${userData.bgimg}`,
+                  }
+                : bg
+            }
+            resizeMode="cover"
+            style={s.bg}
+          />
+        </Pressable>
+        {isLoading && (
+          <ActivityIndicator size={"large"} style={{ zIndex: 10 }} />
+        )}
+        <Pressable style={s.buttonimg} onPress={() => pickImageAsync("img")}>
+          <Image
+            source={
+              userData && userData?.bgimg
+                ? {
+                    uri: `https://server-yondemangacollec.onrender.com/images/${userData.img}`,
+                  }
+                : img
+            }
+            style={s.img}
+          />
+        </Pressable>
+
+        <View style={s.infos}>
+          <Txt styles={s.title}>{userData && userData.pseudo}</Txt>
+          <Txt styles={s.level}>
+            Niveau {Math.floor(userData && userData.level)}{" "}
           </Txt>
-          <View style={s.line}>
-            <Txt styles={s.texttitle}>Email {userData && userData.email}</Txt>
-            <TouchableOpacity
-              onPress={() =>
-                setInfos((prev) => {
-                  return {
-                    ...prev,
-                    emailVisible: !prev.emailVisible,
-                  };
-                })
-              }
-            >
-              <Txt>Modifier</Txt>
-            </TouchableOpacity>
-          </View>
-          <View style={s.line}>
-            <Txt styles={s.texttitle}>
-              Nom d'utilisateur {userData && userData.pseudo}
+        </View>
+        <View style={{ paddingHorizontal: 20 }}>
+          <View style={s.lines}>
+            <Txt styles={[s.texttitle, { fontFamily: "Literata-SemiBold" }]}>
+              Gestion du compte
             </Txt>
-            <TouchableOpacity
-              onPress={() =>
-                setInfos((prev) => {
-                  return {
-                    ...prev,
-                    pseudoVisible: !prev.pseudoVisible,
-                  };
-                })
-              }
-            >
-              <Txt>Modifier</Txt>
-            </TouchableOpacity>
-          </View>
-          <View style={s.line}>
-            <Txt styles={s.texttitle}>Mot de passe</Txt>
-            <TouchableOpacity
-              onPress={() =>
-                setInfos((prev) => {
-                  return {
-                    ...prev,
-                    passwordVisible: !prev.passwordVisible,
-                  };
-                })
-              }
-            >
-              <Txt>Modifier</Txt>
-            </TouchableOpacity>
-          </View>
-          <View style={s.line}>
-            <Txt>
-              Compte créé le {ConvertDateFormat(userData && userData.createdAt)}
-            </Txt>
-          </View>
-          <TouchableOpacity onPress={() => Linking.openURL("https://github.com/Yondemon4266")}>
             <View style={s.line}>
-              <Txt>J'aime l'App ♡</Txt>
-              <Txt>Suivez moi sur Github !</Txt>
+              <Txt styles={s.texttitle}>Email {userData && userData.email}</Txt>
+              <TouchableOpacity
+                onPress={() =>
+                  setInfos((prev) => {
+                    return {
+                      ...prev,
+                      emailVisible: !prev.emailVisible,
+                    };
+                  })
+                }
+              >
+                <Txt>Modifier</Txt>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+            <View style={s.line}>
+              <Txt styles={s.texttitle}>
+                Nom d'utilisateur {userData && userData.pseudo}
+              </Txt>
+              <TouchableOpacity
+                onPress={() =>
+                  setInfos((prev) => {
+                    return {
+                      ...prev,
+                      pseudoVisible: !prev.pseudoVisible,
+                    };
+                  })
+                }
+              >
+                <Txt>Modifier</Txt>
+              </TouchableOpacity>
+            </View>
+            <View style={s.line}>
+              <Txt styles={s.texttitle}>Mot de passe</Txt>
+              <TouchableOpacity
+                onPress={() =>
+                  setInfos((prev) => {
+                    return {
+                      ...prev,
+                      passwordVisible: !prev.passwordVisible,
+                    };
+                  })
+                }
+              >
+                <Txt>Modifier</Txt>
+              </TouchableOpacity>
+            </View>
+            <View style={s.line}>
+              <Txt>
+                Compte créé le{" "}
+                {ConvertDateFormat(userData && userData.createdAt)}
+              </Txt>
+            </View>
+            <TouchableOpacity
+              onPress={() => Linking.openURL("https://github.com/Yondemon4266")}
+            >
+              <View style={s.line}>
+                <Txt>J'aime l'App ♡</Txt>
+                <Txt>Suivez moi sur Github !</Txt>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={{ gap: 20 }}>
+            <View>
+              <ButtonComp
+                onPress={() =>
+                  setInfos((prev) => {
+                    return {
+                      ...prev,
+                      modalVisible: !prev.modalVisible,
+                    };
+                  })
+                }
+                styl={{ height: 40 }}
+              >
+                Se déconnecter
+              </ButtonComp>
+            </View>
+
+            <View
+              style={{
+                height: 50,
+                backgroundColor: color3,
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+              }}
+            >
+              <Ionicons name={"warning"} size={36} color={color5} />
+              <ButtonComp
+                onPress={() =>
+                  setInfos((prev) => ({
+                    ...prev,
+                    modal2Visible: !prev.modal2Visible,
+                  }))
+                }
+              >
+                Supprimer votre compte
+              </ButtonComp>
+            </View>
+          </View>
         </View>
 
-        <ButtonComp
-          onPress={() =>
-            setInfos((prev) => {
-              return {
-                ...prev,
-                modalVisible: !prev.modalVisible,
-              };
-            })
-          }
-        >
-          Déconnexion
-        </ButtonComp>
-      </View>
-      <ModalComp
-        infos={infos}
-        setInfos={setInfos}
-        logout={logout}
-        changeEmail={changeEmail}
-        changePseudo={changePseudo}
-        changePassword={changePassword}
-      />
+        <ModalComp
+          infos={infos}
+          setInfos={setInfos}
+          logout={logout}
+          changeEmail={changeEmail}
+          changePseudo={changePseudo}
+          changePassword={changePassword}
+          deleteAccount={deleteAccount}
+        />
+      </ScrollView>
     </View>
   );
 }

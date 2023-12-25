@@ -17,6 +17,7 @@ export default function ModalComp({
   changeEmail,
   changePseudo,
   changePassword,
+  deleteAccount,
 }) {
   var keyTrue = null;
   for (var cle in infos) {
@@ -35,6 +36,8 @@ export default function ModalComp({
       return "Changer de pseudo";
     } else if (infos.passwordVisible) {
       return "Changer de mot de passe";
+    } else if (infos.modal2Visible) {
+      return "Êtes vous sûr de vouloir supprimer votre compte définitivement?";
     }
   };
 
@@ -49,6 +52,8 @@ export default function ModalComp({
         newpw: "Nouveau mot de passe...",
         newpwctrl: "Confirmer le mot de passe...",
       };
+    } else if (infos.modal2Visible) {
+      return 'Écrivez "SUPPRIMER"';
     }
   };
 
@@ -74,6 +79,8 @@ export default function ModalComp({
           [pwText]: text,
         };
       });
+    } else if (infos.modal2Visible) {
+      setInfos((prev) => ({ ...prev, confirmDeletion: text }));
     }
   };
 
@@ -168,6 +175,20 @@ export default function ModalComp({
           };
         });
       }
+    } else if (infos.modal2Visible) {
+      try {
+        setInfos((prev) => {
+          return {
+            ...prev,
+            loading: true,
+          };
+        });
+        await deleteAccount();
+      } catch (error) {
+        console.log("erreur lors de la suppression du compte", error);
+      } finally {
+        setInfos((prev) => ({ ...prev, loading: false }));
+      }
     }
   };
   const valeursInputs = valeursInputsFunction();
@@ -208,6 +229,12 @@ export default function ModalComp({
         infos.success.pseudo,
         infos.errors.pseudo,
         infos.success.pseudo || infos.errors.pseudo
+      )}
+      {renderMessage(
+        infos.modal2Visible,
+        infos.success.delAccount,
+        infos.errors.delAccount,
+        infos.success.delAccount || infos.errors.delAccount
       )}
     </>
   );

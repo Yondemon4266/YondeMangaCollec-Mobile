@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yondemon.hinokuni-animes"
     },
     "android": {
       "adaptiveIcon": {
